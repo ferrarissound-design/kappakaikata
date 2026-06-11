@@ -134,6 +134,7 @@
   #name-ok { background:linear-gradient(180deg,#7cb342,#689f38); color:#fff; box-shadow:0 3px 0 rgba(0,0,0,.15); }
   #toast { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:rgba(62,107,79,.95); color:#fff; padding:14px 26px; border-radius:20px; font-size:16px; font-weight:bold; opacity:0; pointer-events:none; transition:opacity .4s; z-index:20; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,.3); }
   #toast.show { opacity:1; }
+<audio id="bgm" src="morning_by_the_pond.mp3" loop preload="auto"></audio>
 </style>
 </head>
 <body class="day">
@@ -189,6 +190,13 @@
 <div id="toast"></div>
 
 <script>
+// ===== BGM =====
+const bgm=document.getElementById('bgm');
+bgm.volume=0.4;
+function startBgm(){bgm.play().catch(()=>{});}
+document.addEventListener('click',()=>startBgm(),{once:true});
+document.addEventListener('touchstart',()=>startBgm(),{once:true});
+
 // ===== kappa01.PNG 白背景除去 =====
 const kappaCanvas=document.getElementById('kappa-canvas');
 const kappaCtx=kappaCanvas.getContext('2d');
