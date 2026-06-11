@@ -75,7 +75,7 @@
   #scene.day-bg .zabuton-center { background:radial-gradient(ellipse, rgba(0,0,0,.12), transparent 70%); }
   #scene.night-bg .zabuton-center { background:radial-gradient(ellipse, rgba(0,0,0,.25), transparent 70%); }
 
-  #kappa-wrap { position:absolute; bottom:12%; left:50%; transform:translateX(-50%); width:72%; max-width:300px; cursor:pointer; }
+  #kappa-wrap { position:absolute; bottom:8%; left:50%; transform:translateX(-50%); width:72%; max-width:300px; cursor:pointer; }
   .idle       #kappa-inner { animation:bob 2.6s ease-in-out infinite; }
   .happy-jump #kappa-inner { animation:jump .5s ease 2; }
   .wiggle     #kappa-inner { animation:wig .4s ease 3; }
@@ -161,7 +161,7 @@
     <div id="kappa-wrap" class="idle">
       <div id="kappa-inner">
         <svg id="kappa-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%"></svg>
-        <img id="kappa-img" src="kappa01.PNG" style="display:none;width:100%;filter:none" alt="カッパ">
+        <img id="kappa-img" src="kappa01.PNG" style="display:none;width:100%;filter:none;mix-blend-mode:multiply" alt="カッパ">
       </div>
     </div>
     <div id="death-overlay">
