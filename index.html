@@ -159,7 +159,10 @@
     <div id="zzz">💤</div>
     <div id="night-banner">🌙 おやすみタイム（22:00〜6:00）</div>
     <div id="kappa-wrap" class="idle">
-      <svg id="kappa-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="kappa-inner">
+        <svg id="kappa-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%"></svg>
+        <img id="kappa-img" src="kappa01.PNG" style="display:none;width:100%;filter:none" alt="カッパ">
+      </div>
     </div>
     <div id="death-overlay">
       <div class="rip">🪦</div>
@@ -359,6 +362,8 @@ function drawKappa(){
 
   // ===== たまご =====
   if(s===0){
+    svg.style.display='block';
+    document.getElementById('kappa-img').style.display='none';
     svg.innerHTML=`
       <g id="kappa-inner">
         <ellipse cx="100" cy="200" rx="60" ry="12" fill="rgba(0,0,0,.12)"/>
@@ -373,12 +378,10 @@ function drawKappa(){
   }
 
   // ===== kappa01.PNG画像を使用 =====
-  const opacity = dead ? '0.5' : '1';
-  svg.innerHTML=`
-  <g id="kappa-inner">
-    <ellipse cx="100" cy="207" rx="72" ry="11" fill="rgba(0,0,0,.16)"/>
-    <image href="kappa01.PNG" x="10" y="5" width="180" height="200" opacity="${opacity}" style="${dead?'filter:grayscale(80%)':''}"/>
-  </g>`;
+  svg.style.display='none';
+  const img=document.getElementById('kappa-img');
+  img.style.display='block';
+  img.style.filter=dead?'grayscale(80%) opacity(0.5)':'none';
 }
 
 // ===== 死亡 =====
