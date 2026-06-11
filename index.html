@@ -388,6 +388,7 @@ function drawKappa(){
   // ===== たまご =====
   if(s===0){
     svg.style.display='block';
+    svg.style.height=(svg.offsetWidth*(220/200))+'px';
     document.getElementById('kappa-canvas').style.display='none';
     svg.innerHTML=`
       <g id="kappa-inner">
