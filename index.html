@@ -162,7 +162,7 @@
     <div id="kappa-wrap" class="idle">
       <div id="kappa-inner">
         <svg id="kappa-svg" viewBox="0 0 200 220" width="200" height="220" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto"></svg>
-        <canvas id="kappa-canvas" style="display:none;width:100%;image-rendering:auto"></canvas>
+        <canvas id="kappa-canvas" style="display:none;width:100%;image-rendering:auto;transition:opacity 0.4s"></canvas>
       </div>
     </div>
     <div id="death-overlay">
@@ -197,22 +197,56 @@ function startBgm(){bgm.play().catch(()=>{});}
 document.addEventListener('click',()=>startBgm(),{once:true});
 document.addEventListener('touchstart',()=>startBgm(),{once:true});
 
-// ===== kappa01.PNG 白背景除去 =====
+// ===== カッパ画像 白背景除去 =====
 const kappaCanvas=document.getElementById('kappa-canvas');
 const kappaCtx=kappaCanvas.getContext('2d');
-const kappaSourceImg=new Image();
-kappaSourceImg.src='PNG画像.png';
-kappaSourceImg.onload=()=>{
-  kappaCanvas.width=kappaSourceImg.naturalWidth;
-  kappaCanvas.height=kappaSourceImg.naturalHeight;
-  kappaCtx.drawImage(kappaSourceImg,0,0);
-  const d=kappaCtx.getImageData(0,0,kappaCanvas.width,kappaCanvas.height);
+
+function removeWhiteBg(imgEl){
+  const oc=document.createElement('canvas');
+  oc.width=imgEl.naturalWidth; oc.height=imgEl.naturalHeight;
+  const ctx=oc.getContext('2d');
+  ctx.drawImage(imgEl,0,0);
+  const d=ctx.getImageData(0,0,oc.width,oc.height);
   for(let i=0;i<d.data.length;i+=4){
     const r=d.data[i],g=d.data[i+1],b=d.data[i+2];
     if(r>220&&g>220&&b>220) d.data[i+3]=0;
   }
-  kappaCtx.putImageData(d,0,0);
-};
+  ctx.putImageData(d,0,0);
+  return oc;
+}
+
+const kappaImages=[null,null];
+let kappaIdx=0;
+let kappaLoaded=0;
+
+function onKappaLoaded(){
+  kappaLoaded++;
+  if(kappaLoaded===2) startKappaSwitch();
+}
+function startKappaSwitch(){
+  showKappa(0);
+  setInterval(()=>{
+    kappaIdx=(kappaIdx+1)%2;
+    kappaCanvas.style.opacity='0';
+    setTimeout(()=>{
+      showKappa(kappaIdx);
+      kappaCanvas.style.opacity='1';
+    },400);
+  },20000);
+}
+function showKappa(idx){
+  const src=kappaImages[idx];
+  if(!src) return;
+  kappaCanvas.width=src.width; kappaCanvas.height=src.height;
+  kappaCtx.clearRect(0,0,src.width,src.height);
+  kappaCtx.drawImage(src,0,0);
+}
+
+['PNG画像.png','IMG_2456.png'].forEach((src,i)=>{
+  const img=new Image();
+  img.onload=()=>{ kappaImages[i]=removeWhiteBg(img); onKappaLoaded(); };
+  img.src=src;
+});
 
 // ===== セーブ・ロード =====
 const SAVE_KEY='punisuke_v1';
