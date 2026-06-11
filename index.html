@@ -372,121 +372,12 @@ function drawKappa(){
     return;
   }
 
-  // ===== 成長差分 =====
-  const scale = s===1 ? .92 : s===4 ? 1.04 : 1;
-  const bodyW = s===4 ? 43 : 38;
-  const bodyH = s===4 ? 56 : 52;
-  const headRx = s===4 ? 54 : 52;
-  const headRy = s===4 ? 50 : 50;
-
+  // ===== kappa01.PNG画像を使用 =====
+  const opacity = dead ? '0.5' : '1';
   svg.innerHTML=`
-  <g id="kappa-inner" transform="translate(${100-100*scale} ${220-220*scale}) scale(${scale})">
-
-    <!-- 影 -->
+  <g id="kappa-inner">
     <ellipse cx="100" cy="207" rx="72" ry="11" fill="rgba(0,0,0,.16)"/>
-
-    <!-- 尻尾 -->
-    <path d="M140 168 q26 7 35 31 q-23 3 -38 -14 Z"
-      fill="${skin}" stroke="${stroke}" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M155 181 q11 6 16 16" stroke="${stroke}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-
-    <!-- 足 -->
-    <path d="M67 177 q-20 10 -24 28 q19 8 40-4 q9-16 1-29 Z"
-      fill="${skin}" stroke="${stroke}" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M133 177 q20 10 24 28 q-19 8-40-4 q-9-16-1-29 Z"
-      fill="${skin}" stroke="${stroke}" stroke-width="3" stroke-linejoin="round"/>
-
-    <!-- 足指 -->
-    <path d="M51 202 q5-7 9 1 M60 205 q5-7 9 1 M69 204 q5-6 8 1"
-      stroke="${stroke}" stroke-width="2.3" fill="none" stroke-linecap="round"/>
-    <path d="M149 202 q-5-7-9 1 M140 205 q-5-7-9 1 M131 204 q-5-6-8 1"
-      stroke="${stroke}" stroke-width="2.3" fill="none" stroke-linecap="round"/>
-
-    <!-- 体：漫画っぽく縦長 -->
-    <path d="M67 115
-             q-20 34 -12 72
-             q7 28 45 28
-             q38 0 45-28
-             q8-38 -12-72
-             q-12 15 -33 15
-             q-21 0 -33-15 Z"
-      fill="${skin}" stroke="${stroke}" stroke-width="3.5" stroke-linejoin="round"/>
-
-    <!-- お腹 -->
-    <ellipse cx="100" cy="166" rx="${bodyW}" ry="${bodyH}" fill="${belly}" opacity=".88"/>
-    <path d="M95 184 q5 8 10 0" stroke="${stroke}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-
-    <!-- 腕：前に垂れる感じ -->
-    <path d="M65 124 q-16 30 -8 61 q7 10 17-1 q-2-28 8-52"
-      fill="${skin}" stroke="${stroke}" stroke-width="3.2" stroke-linejoin="round"/>
-    <path d="M135 124 q16 30 8 61 q-7 10-17-1 q2-28-8-52"
-      fill="${skin}" stroke="${stroke}" stroke-width="3.2" stroke-linejoin="round"/>
-
-    <!-- 手指 -->
-    <path d="M61 181 q3 8 8 0 M67 186 q4 7 8 0 M73 185 q4 6 7 0"
-      stroke="${stroke}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-    <path d="M139 181 q-3 8-8 0 M133 186 q-4 7-8 0 M127 185 q-4 6-7 0"
-      stroke="${stroke}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-
-    <!-- 頭：縦にボリューム出す -->
-    <ellipse cx="100" cy="78" rx="${headRx}" ry="${headRy}"
-      fill="${skin}" stroke="${stroke}" stroke-width="3.5"/>
-
-    <!-- 耳 -->
-    <circle cx="48" cy="84" r="10" fill="${skin}" stroke="${stroke}" stroke-width="3"/>
-    <circle cx="152" cy="84" r="10" fill="${skin}" stroke="${stroke}" stroke-width="3"/>
-
-    <!-- 皿 -->
-    <path d="M72 38 q28-18 56 0 q-2 13-28 14 q-26-1-28-14 Z"
-      fill="${dishFill}" stroke="${stroke}" stroke-width="3" stroke-linejoin="round"/>
-    <ellipse cx="100" cy="38" rx="25" ry="7" fill="${waterFill}" opacity=".7"/>
-    <path d="M82 36 q18-6 36 0" stroke="#fff" stroke-width="3.5" opacity=".6" fill="none" stroke-linecap="round"/>
-
-    <!-- 髪：お皿を囲んで頭頂から外ハネ -->
-    <path d="
-      M44 74
-      C 42 54, 52 36, 66 34
-      C 68 24, 76 20, 82 28
-      C 86 18, 94 18, 100 26
-      C 106 18, 114 18, 118 28
-      C 124 20, 132 24, 134 34
-      C 148 36, 158 54, 156 74
-      C 150 66, 144 60, 140 66
-      C 138 56, 132 52, 128 60
-      C 124 50, 118 48, 114 58
-      C 110 48, 106 46, 100 54
-      C 94 46, 90 48, 86 58
-      C 82 48, 76 50, 72 60
-      C 68 52, 62 56, 60 66
-      C 56 60, 50 66, 44 74 Z"
-      fill="${hair}" stroke="${hairStroke}" stroke-width="2.5" stroke-linejoin="round"/>
-
-    <!-- 目 -->
-    ${eyes}
-
-    <!-- ほっぺ -->
-    <ellipse cx="60" cy="96" rx="9" ry="6" fill="#e8c0a8" opacity="${dead?'.2':'.5'}"/>
-    <ellipse cx="140" cy="96" rx="9" ry="6" fill="#e8c0a8" opacity="${dead?'.2':'.5'}"/>
-
-    <!-- くちばし：顔中央・明るめベージュ・幅広 -->
-    <!-- 上くちばし -->
-    <path d="M65 94 C 68 84, 82 80, 100 80 C 118 80, 132 84, 135 94 C 128 100, 116 103, 100 103 C 84 103, 72 100, 65 94 Z"
-      fill="${billFill}" stroke="${billStroke}" stroke-width="2.5" stroke-linejoin="round"/>
-    <!-- ハイライト -->
-    <path d="M76 86 C 86 82, 114 82, 124 86" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".55"/>
-    <!-- 鼻孔 -->
-    <ellipse cx="91" cy="92" rx="3" ry="2" fill="${billStroke}" opacity=".5"/>
-    <ellipse cx="109" cy="92" rx="3" ry="2" fill="${billStroke}" opacity=".5"/>
-    <!-- 下くちばし -->
-    <path d="M66 96 C 70 108, 84 113, 100 113 C 116 113, 130 108, 134 96 C 128 102, 116 105, 100 105 C 84 105, 72 102, 66 96 Z"
-      fill="${dead?'#b0a090':'#d8c0a0'}" stroke="${billStroke}" stroke-width="2.2" stroke-linejoin="round"/>
-    <!-- 口の境界 -->
-    <path d="M67 95 C 82 101, 118 101, 133 95" stroke="${billStroke}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-
-    <!-- 首線 -->
-    <path d="M76 124 q24 10 48 0" stroke="${stroke}" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".7"/>
-
-    ${s===5?'<circle cx="82" cy="72" r="3.5" fill="#fff176" opacity=".9"/><circle cx="118" cy="72" r="3.5" fill="#fff176" opacity=".9"/>':''}
+    <image href="kappa01.PNG" x="10" y="5" width="180" height="200" opacity="${opacity}" style="${dead?'filter:grayscale(80%)':''}"/>
   </g>`;
 }
 
