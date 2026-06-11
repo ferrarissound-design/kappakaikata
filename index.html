@@ -387,8 +387,11 @@ function drawKappa(){
 
   // ===== たまご =====
   if(s===0){
-    svg.style.display='block';
     document.getElementById('kappa-canvas').style.display='none';
+    svg.style.display='block';
+    const wrapW=document.getElementById('kappa-wrap').offsetWidth||240;
+    svg.setAttribute('width', wrapW);
+    svg.setAttribute('height', Math.round(wrapW*220/200));
     svg.innerHTML=`
       <g id="kappa-inner">
         <ellipse cx="100" cy="200" rx="60" ry="12" fill="rgba(0,0,0,.12)"/>
