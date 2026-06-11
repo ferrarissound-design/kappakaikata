@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ぷにガッパ飼育記</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; overflow:hidden; }
+  body { font-family:'Hiragino Maru Gothic ProN','Yu Gothic',sans-serif; display:flex; flex-direction:column; align-items:center; user-select:none; touch-action:manipulation; transition:background 2s; }
+  body.day   { background:linear-gradient(180deg,#dcefd8 0%,#bfe3c0 45%,#a8d8b9 100%); }
+  body.night { background:linear-gradient(180deg,#1a2340 0%,#2a3560 45%,#1e2e50 100%); }
+  #app { width:100%; max-width:480px; height:100%; display:flex; flex-direction:column; padding:10px; }
+  h1 { text-align:center; font-size:20px; padding:6px 0 2px; text-shadow:0 1px 0 rgba(255,255,255,.3); letter-spacing:2px; transition:color 2s; }
+  body.day h1 { color:#3e6b4f; } body.night h1 { color:#a0c4ff; }
+  #stage-label { text-align:center; font-size:12px; margin-bottom:4px; transition:color 2s; }
+  body.day #stage-label { color:#5e8a6e; } body.night #stage-label { color:#7090b0; }
+  #stats { display:flex; gap:8px; margin-bottom:6px; }
+  .stat { flex:1; border-radius:12px; padding:6px 8px; box-shadow:0 2px 4px rgba(0,0,0,.08); transition:background 2s; }
+  body.day .stat { background:rgba(255,255,255,.65); } body.night .stat { background:rgba(255,255,255,.12); }
+  .stat .label { font-size:11px; display:flex; justify-content:space-between; transition:color 2s; }
+  body.day .stat .label { color:#4a705a; } body.night .stat .label { color:#8ab0d0; }
+  .bar { height:8px; border-radius:4px; margin-top:3px; overflow:hidden; transition:background 2s; }
+  body.day .bar { background:#e0e8df; } body.night .bar { background:#2a3a5a; }
+  .bar > div { height:100%; border-radius:4px; transition:width .4s ease; }
+  #bar-food > div  { background:linear-gradient(90deg,#8bc34a,#aed581); }
+  #bar-water > div { background:linear-gradient(90deg,#4fc3f7,#81d4fa); }
+  #bar-mood > div  { background:linear-gradient(90deg,#ffb74d,#ffd54f); }
+
+  #scene { flex:1; position:relative; border-radius:20px; overflow:hidden; box-shadow:inset 0 0 30px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.2); min-height:260px; transition:background 2s; }
+  /* 和室：昼 */
+  #scene.day-bg   { background:linear-gradient(180deg,#f5ead5 0%,#f0e3c8 48%,#c8b87a 48.5%,#bca963 100%); }
+  /* 和室：夜 */
+  #scene.night-bg { background:linear-gradient(180deg,#3a3550 0%,#332e48 48%,#5a5038 48.5%,#4a4230 100%); }
+  #scene.dead-bg  { background:linear-gradient(180deg,#b8b8c8 0%,#9a9aaa 48%,#888878 48.5%,#707080 100%); }
+
+  /* 障子 */
+  .shoji { position:absolute; top:6%; width:30%; height:40%; border-radius:4px; transition:background 2s,border-color 2s; }
+  .shoji.left { left:6%; } .shoji.right { right:6%; }
+  #scene.day-bg .shoji { background:linear-gradient(180deg,#fdfaf0,#f8f2e0); border:5px solid #8a6f4d; }
+  #scene.night-bg .shoji { background:linear-gradient(180deg,#262238,#1e1a30); border:5px solid #4a3f30; }
+  #scene.dead-bg .shoji { background:#aaa; border:5px solid #777; }
+  .shoji-grid { position:absolute; inset:0; transition:opacity 2s; }
+  #scene.day-bg .shoji-grid {
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent calc(25% - 2px), #b89968 calc(25% - 2px), #b89968 25%),
+      repeating-linear-gradient(90deg, transparent, transparent calc(33.3% - 2px), #b89968 calc(33.3% - 2px), #b89968 33.3%);
+  }
+  #scene.night-bg .shoji-grid {
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent calc(25% - 2px), #3a3450 calc(25% - 2px), #3a3450 25%),
+      repeating-linear-gradient(90deg, transparent, transparent calc(33.3% - 2px), #3a3450 calc(33.3% - 2px), #3a3450 33.3%);
+  }
+
+  /* 畳の縁ライン */
+  .tatami-line { position:absolute; bottom:0; width:100%; height:52%; pointer-events:none; transition:opacity 2s; }
+  #scene.day-bg .tatami-line {
+    background:linear-gradient(90deg, transparent calc(50% - 1.5px), #a89858 calc(50% - 1.5px), #a89858 calc(50% + 1.5px), transparent calc(50% + 1.5px));
+  }
+  #scene.night-bg .tatami-line {
+    background:linear-gradient(90deg, transparent calc(50% - 1.5px), #3a3428 calc(50% - 1.5px), #3a3428 calc(50% + 1.5px), transparent calc(50% + 1.5px));
+  }
+  #scene.dead-bg .tatami-line { background:none; }
+
+  /* 座布団 */
+  #rock { position:absolute; bottom:7%; left:50%; transform:translateX(-50%); width:68%; height:13%; border-radius:18px; box-shadow:0 5px 8px rgba(0,0,0,.18); transition:background 2s; }
+  #scene.day-bg   #rock { background:linear-gradient(180deg,#d96a6a 0%,#c25555 60%,#a84848 100%); }
+  #scene.night-bg #rock { background:linear-gradient(180deg,#7a4048 0%,#683840 60%,#583038 100%); }
+  #scene.dead-bg  #rock { background:linear-gradient(180deg,#999,#777); }
+  #rock::before, #rock::after { content:''; position:absolute; width:10px; height:10px; border-radius:50%; transition:background 2s; top:50%; transform:translateY(-50%); }
+  #rock::before { left:-4px; } #rock::after { right:-4px; }
+  #scene.day-bg #rock::before, #scene.day-bg #rock::after { background:#e8c84a; }
+  #scene.night-bg #rock::before, #scene.night-bg #rock::after { background:#8a7838; }
+  .zabuton-center { position:absolute; bottom:9.5%; left:50%; transform:translateX(-50%); width:50%; height:7%; border-radius:50%; pointer-events:none; transition:background 2s; }
+  #scene.day-bg .zabuton-center { background:radial-gradient(ellipse, rgba(0,0,0,.12), transparent 70%); }
+  #scene.night-bg .zabuton-center { background:radial-gradient(ellipse, rgba(0,0,0,.25), transparent 70%); }
+
+  #kappa-wrap { position:absolute; bottom:12%; left:50%; transform:translateX(-50%); width:72%; max-width:300px; cursor:pointer; }
+  .idle       #kappa-inner { animation:bob 2.6s ease-in-out infinite; }
+  .happy-jump #kappa-inner { animation:jump .5s ease 2; }
+  .wiggle     #kappa-inner { animation:wig .4s ease 3; }
+  .sleeping   #kappa-inner { animation:sleep-bob 4s ease-in-out infinite; }
+  .dying      #kappa-inner { animation:sway 1.2s ease-in-out infinite; }
+  @keyframes bob      { 0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)} }
+  @keyframes jump     { 0%,100%{transform:translateY(0)}40%{transform:translateY(-26px)} }
+  @keyframes wig      { 0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)} }
+  @keyframes sleep-bob{ 0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(4px) rotate(3deg)} }
+  @keyframes sway     { 0%,100%{transform:rotate(-8deg) translateY(4px)}50%{transform:rotate(8deg) translateY(4px)} }
+
+  #zzz { position:absolute; bottom:38%; left:56%; font-size:18px; opacity:0; pointer-events:none; transition:opacity 1s; }
+  #zzz.show { opacity:1; animation:zzz-float 2s ease-in-out infinite; }
+  @keyframes zzz-float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)} }
+  #night-banner { position:absolute; bottom:2%; left:50%; transform:translateX(-50%); background:rgba(20,30,60,.85); color:#a0c4ff; border-radius:12px; padding:5px 16px; font-size:12px; white-space:nowrap; opacity:0; transition:opacity 1s; pointer-events:none; }
+  #night-banner.show { opacity:1; }
+  #speech { position:absolute; top:8%; left:50%; transform:translateX(-50%); background:rgba(255,255,255,.92); border-radius:16px; padding:8px 16px; font-size:14px; color:#3e6b4f; box-shadow:0 3px 8px rgba(0,0,0,.12); opacity:0; transition:opacity .3s; pointer-events:none; white-space:nowrap; max-width:90%; }
+  #speech.show { opacity:1; }
+  #speech::after { content:''; position:absolute; bottom:-8px; left:50%; transform:translateX(-50%); border:8px solid transparent; border-top-color:rgba(255,255,255,.92); border-bottom:0; }
+  .particle { position:absolute; font-size:22px; pointer-events:none; animation:floatUp 1.2s ease-out forwards; z-index:5; }
+  @keyframes floatUp { 0%{opacity:1;transform:translateY(0) scale(.6)}100%{opacity:0;transform:translateY(-70px) scale(1.2)} }
+  #level-badge { position:absolute; top:10px; left:10px; border-radius:12px; padding:4px 12px; font-size:12px; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,.1); transition:background 2s,color 2s; }
+  #scene.day-bg   #level-badge { background:rgba(255,255,255,.8); color:#3e6b4f; }
+  #scene.night-bg #level-badge { background:rgba(20,30,60,.8); color:#a0c4ff; }
+  #exp-bar { width:80px; height:5px; background:#dde; border-radius:3px; margin-top:3px; overflow:hidden; }
+  #exp-bar > div { height:100%; background:linear-gradient(90deg,#ba68c8,#ce93d8); border-radius:3px; transition:width .4s; }
+  #save-badge { position:absolute; top:10px; right:10px; background:rgba(255,255,255,.8); border-radius:12px; padding:4px 10px; font-size:11px; color:#5e8a6e; box-shadow:0 2px 4px rgba(0,0,0,.1); opacity:0; transition:opacity .5s; }
+  #save-badge.show { opacity:1; }
+  #death-overlay { display:none; position:absolute; inset:0; background:rgba(30,30,50,.75); flex-direction:column; align-items:center; justify-content:center; gap:14px; z-index:10; border-radius:20px; }
+  #death-overlay.show { display:flex; }
+  #death-overlay .rip { font-size:52px; animation:floatSoul 3s ease-in-out infinite; }
+  @keyframes floatSoul { 0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)} }
+  #death-overlay .msg    { color:#fff; font-size:16px; font-weight:bold; text-align:center; line-height:1.7; text-shadow:0 2px 4px rgba(0,0,0,.5); }
+  #death-overlay .record { color:#ccc; font-size:12px; text-align:center; }
+  #btn-revive { background:linear-gradient(180deg,#ffb74d,#fb8c00); color:#fff; border:none; border-radius:16px; padding:12px 30px; font-size:15px; font-weight:bold; font-family:inherit; cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,.2); animation:pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.05)} }
+  #actions { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; padding:10px 0 4px; }
+  .btn { border:none; border-radius:14px; padding:9px 2px; font-size:11px; font-weight:bold; color:#fff; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.18); transition:transform .1s,box-shadow .1s,opacity .5s; font-family:inherit; display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .btn span.icon { font-size:20px; }
+  .btn:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.18); }
+  .btn:disabled { opacity:.35; pointer-events:none; }
+  #btn-feed  { background:linear-gradient(180deg,#7cb342,#689f38); }
+  #btn-water { background:linear-gradient(180deg,#42a5f5,#1e88e5); }
+  #btn-pet   { background:linear-gradient(180deg,#ffb74d,#fb8c00); }
+  #btn-play  { background:linear-gradient(180deg,#ab47bc,#8e24aa); }
+  #btn-wake  { background:linear-gradient(180deg,#ef5350,#c62828); }
+  #name-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:30; align-items:center; justify-content:center; }
+  #name-modal.show { display:flex; }
+  #name-box { background:#fff; border-radius:20px; padding:24px 20px; width:80%; max-width:300px; box-shadow:0 8px 30px rgba(0,0,0,.25); display:flex; flex-direction:column; gap:14px; }
+  #name-box h2 { text-align:center; color:#3e6b4f; font-size:16px; }
+  #name-input { border:2px solid #b2dcc4; border-radius:12px; padding:10px 14px; font-size:16px; font-family:inherit; color:#3e6b4f; outline:none; text-align:center; }
+  #name-input:focus { border-color:#5e8a6e; }
+  #name-btns { display:flex; gap:10px; }
+  #name-btns button { flex:1; border:none; border-radius:12px; padding:10px; font-size:14px; font-weight:bold; font-family:inherit; cursor:pointer; }
+  #name-cancel { background:#e8e8e8; color:#666; }
+  #name-ok { background:linear-gradient(180deg,#7cb342,#689f38); color:#fff; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+  #toast { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:rgba(62,107,79,.95); color:#fff; padding:14px 26px; border-radius:20px; font-size:16px; font-weight:bold; opacity:0; pointer-events:none; transition:opacity .4s; z-index:20; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,.3); }
+  #toast.show { opacity:1; }
+</style>
+</head>
+<body class="day">
+<div id="app">
+  <h1>ぷにガッパ飼育記</h1>
+  <div id="stage-label">なまえ：<span id="kappa-name">ぷにすけ</span> <button id="btn-rename" style="background:none;border:none;font-size:13px;cursor:pointer;color:#5e8a6e;">✏️</button></div>
+  <div id="stats">
+    <div class="stat"><div class="label"><span>🥒 満腹</span><span id="v-food">80</span></div><div class="bar" id="bar-food"><div style="width:80%"></div></div></div>
+    <div class="stat"><div class="label"><span>💧 お皿</span><span id="v-water">80</span></div><div class="bar" id="bar-water"><div style="width:80%"></div></div></div>
+    <div class="stat"><div class="label"><span>😊 機嫌</span><span id="v-mood">80</span></div><div class="bar" id="bar-mood"><div style="width:80%"></div></div></div>
+  </div>
+  <div id="scene" class="day-bg">
+    <div class="shoji left"><div class="shoji-grid"></div></div>
+    <div class="shoji right"><div class="shoji-grid"></div></div>
+    <div class="tatami-line"></div>
+    <div id="rock"></div>
+    <div class="zabuton-center"></div>
+    <div id="level-badge">Lv.<span id="lv">1</span> <span id="stage-name">たまご</span>
+      <div id="exp-bar"><div style="width:0%"></div></div>
+    </div>
+    <div id="save-badge">💾 セーブ済み</div>
+    <div id="speech"></div>
+    <div id="zzz">💤</div>
+    <div id="night-banner">🌙 おやすみタイム（22:00〜6:00）</div>
+    <div id="kappa-wrap" class="idle">
+      <svg id="kappa-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div id="death-overlay">
+      <div class="rip">🪦</div>
+      <div class="msg" id="death-msg"></div>
+      <div class="record" id="death-record"></div>
+      <button id="btn-revive">🥚 あたらしいたまご</button>
+    </div>
+  </div>
+  <div id="actions">
+    <button class="btn" id="btn-feed"><span class="icon">🥒</span>きゅうり</button>
+    <button class="btn" id="btn-water"><span class="icon">💧</span>水かけ</button>
+    <button class="btn" id="btn-pet"><span class="icon">🤚</span>なでる</button>
+    <button class="btn" id="btn-play"><span class="icon">⚽</span>あそぶ</button>
+    <button class="btn" id="btn-wake"><span class="icon">🌙</span>起こす</button>
+  </div>
+</div>
+<div id="name-modal">
+  <div id="name-box">
+    <h2>なまえをかえる</h2>
+    <input id="name-input" type="text" maxlength="8" placeholder="ぷにすけ">
+    <div id="name-btns"><button id="name-cancel">やめる</button><button id="name-ok">きめた！</button></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ===== セーブ・ロード =====
+const SAVE_KEY='punisuke_v1';
+function saveState(){
+  try {
+    localStorage.setItem(SAVE_KEY,JSON.stringify({
+      food:state.food,water:state.water,mood:state.mood,
+      level:state.level,exp:state.exp,stage:state.stage,
+      name:state.name,dead:state.dead,maxLevel:state.maxLevel,
+      care:state.care,wakeUsed:state.wakeUsed,
+      wasNight:isNightTime(),savedAt:Date.now()
+    }));
+    showSaveBadge();
+  } catch(e){}
+}
+function loadState(){try{const r=localStorage.getItem(SAVE_KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
+let saveBadgeTimer;
+function showSaveBadge(){
+  const b=document.getElementById('save-badge');
+  b.classList.add('show');clearTimeout(saveBadgeTimer);
+  saveBadgeTimer=setTimeout(()=>b.classList.remove('show'),1500);
+}
+
+// ===== 昼夜 =====
+function isNightTime(){const h=new Date().getHours();return h>=22||h<6;}
+function setSceneMode(mode){
+  const scene=document.getElementById('scene');
+  scene.classList.remove('day-bg','night-bg','dead-bg');
+  scene.classList.add(mode);
+}
+
+// ===== 状態 =====
+// stage: 0=たまご 1=子ガッパ 2=大人ガッパ 3=みずガッパ 4=でぶガッパ 5=夜行性ガッパ
+const STAGE_NAMES=['たまご','子ガッパ','大人ガッパ','みずガッパ','でぶガッパ','夜行性ガッパ'];
+const EXP_NEXT=lv=>20+lv*15;
+const saved=loadState();
+const state={
+  food:80,water:80,mood:80,
+  level:1,exp:0,stage:0,
+  name:'ぷにすけ',dead:false,maxLevel:1,
+  care:{feed:0,water:0,pet:0,play:0,wake:0},
+  wakeUsed:false,sleeping:false,
+  blinking:false,expression:'normal'
+};
+if(saved){
+  Object.assign(state,{
+    food:saved.food??80,water:saved.water??80,mood:saved.mood??80,
+    level:saved.level??1,exp:saved.exp??0,stage:saved.stage??0,
+    name:saved.name??'ぷにすけ',dead:saved.dead??false,maxLevel:saved.maxLevel??1,
+    care:saved.care??{feed:0,water:0,pet:0,play:0,wake:0},
+    wakeUsed:saved.wakeUsed??false
+  });
+  if(!state.dead&&saved.savedAt&&state.stage>0){
+    const secs=Math.min(Math.floor((Date.now()-saved.savedAt)/1000),600);
+    const t=secs/3;
+    const wasNight=saved.wasNight??false;
+    if(!wasNight){
+      state.food=Math.max(0,state.food-0.6*t);
+      state.water=Math.max(0,state.water-0.8*t);
+      state.mood=Math.max(0,state.mood-0.5*t);
+    } else {
+      state.food=Math.min(100,state.food+0.3*t);
+      state.water=Math.min(100,state.water+0.2*t);
+      state.mood=Math.min(100,state.mood+0.4*t);
+    }
+  }
+}
+document.getElementById('kappa-name').textContent=state.name;
+
+// ===== 昼夜UI =====
+function applyDayNight(night,initial=false){
+  const body=document.body;
+  const zzz=document.getElementById('zzz'),banner=document.getElementById('night-banner');
+  const w=document.getElementById('kappa-wrap');
+  if(state.dead) return;
+  if(night){
+    body.className='night';
+    setSceneMode('night-bg');
+    if(state.stage>0){
+      state.sleeping=true;
+      w.className='sleeping';
+      zzz.classList.add('show');
+      banner.classList.add('show');
+      document.getElementById('btn-wake').disabled=false;
+      setButtonsDisabled(true,['btn-wake']);
+      if(!initial){say('眠い…おやすみ💤',2500);particles('💤',4);}
+    }
+  } else {
+    body.className='day';
+    setSceneMode('day-bg');
+    state.wakeUsed=false;
+    if(state.sleeping){
+      state.sleeping=false;
+      state.food=Math.min(100,state.food+15);
+      state.water=Math.min(100,state.water+10);
+      state.mood=Math.min(100,state.mood+20);
+      w.className='idle';
+      zzz.classList.remove('show');
+      banner.classList.remove('show');
+      setButtonsDisabled(false);
+      if(!initial){say('おはよう〜！よく寝た！',2500);particles('🌅',4);updateUI();saveState();}
+    }
+  }
+}
+
+// ===== 起こすボタン =====
+document.getElementById('btn-wake').onclick=()=>{
+  if(!state.sleeping||state.wakeUsed||state.dead||state.stage===0) return;
+  state.sleeping=false;
+  state.wakeUsed=true;
+  state.care.wake++;
+  state.mood=Math.max(0,state.mood-10);
+  document.getElementById('kappa-wrap').className='idle';
+  document.getElementById('zzz').classList.remove('show');
+  document.getElementById('night-banner').classList.remove('show');
+  setButtonsDisabled(false);
+  document.getElementById('btn-wake').disabled=true;
+  say('むにゃ…起こしたな〜…😪',2500);
+  particles('😪',4);
+  updateUI();saveState();
+};
+
+// ===== SVG描画（かあたん風） =====
+const svg=document.getElementById('kappa-svg');
+function drawKappa(){
+  const e=state.expression, blink=state.blinking, dead=state.dead, sleep=state.sleeping;
+  const s=state.stage;
+
+  // ===== 色 =====
+  let skin = '#b8cfaa';
+  let stroke = '#5a6e5c';
+  let belly = '#d4e4c4';
+  let hair = '#69706f';
+  let hairStroke = '#4e5755';
+
+  if(dead){
+    skin='#aeb7aa'; stroke='#7b8278'; belly='#c4cabd'; hair='#8b8b8b'; hairStroke='#666';
+  } else if(s===3){
+    skin='#a8c8c8'; stroke='#5a8688'; belly='#c8e4e4';
+  } else if(s===4){
+    skin='#c0d090'; stroke='#6a7a48'; belly='#d8e8a8';
+  } else if(s===5){
+    skin='#b0a8c8'; stroke='#625888'; belly='#ccc4e0'; hair='#504870'; hairStroke='#3a3454';
+  }
+
+  const billFill = dead ? '#c8b8a8' : '#e8d4b8';
+  const billStroke = dead ? '#907868' : '#a08878';
+  const dishFill = dead ? '#ddd' : (state.water>30 ? '#f0eedd' : '#ddd4c2');
+  const waterFill = state.water>30 && !dead ? '#bde9f7' : 'transparent';
+
+  // ===== 目 =====
+  let eyes;
+  if(dead && s>0){
+    eyes=`
+      <path d="M74 82 l10 10 M84 82 l-10 10" stroke="#666" stroke-width="3" stroke-linecap="round"/>
+      <path d="M116 82 l10 10 M126 82 l-10 10" stroke="#666" stroke-width="3" stroke-linecap="round"/>`;
+  } else if(sleep && s>0){
+    eyes=`
+      <path d="M72 88 q9 6 18 0" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M110 88 q9 6 18 0" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  } else if(blink){
+    eyes=`
+      <path d="M73 86 q8 5 16 0" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M111 86 q8 5 16 0" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  } else {
+    eyes=`
+      <circle cx="81" cy="84" r="4.2" fill="#2b2b2b"/>
+      <circle cx="119" cy="84" r="4.2" fill="#2b2b2b"/>
+      <circle cx="82.5" cy="82.5" r="1.4" fill="#fff"/>
+      <circle cx="120.5" cy="82.5" r="1.4" fill="#fff"/>`;
+  }
+
+  // ===== たまご =====
+  if(s===0){
+    svg.innerHTML=`
+      <g id="kappa-inner">
+        <ellipse cx="100" cy="200" rx="60" ry="12" fill="rgba(0,0,0,.12)"/>
+        <path d="M100 38 C142 38 164 96 164 144 C164 185 135 205 100 205 C65 205 36 185 36 144 C36 96 58 38 100 38 Z"
+          fill="#eef3e2" stroke="#c9d6b4" stroke-width="3"/>
+        <path d="M58 122 l13 13 l12 -16 l13 16 l12 -16 l13 16 l13 -13"
+          stroke="#a8c08a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <ellipse cx="82" cy="78" rx="13" ry="22" fill="rgba(255,255,255,.55)" transform="rotate(-22 82 78)"/>
+        ${state.exp>EXP_NEXT(state.level)*0.5?'<path d="M95 58 l11 16 l-13 4 z" fill="#cdd9b8"/>':''}
+      </g>`;
+    return;
+  }
+
+  // ===== 成長差分 =====
+  const scale = s===1 ? .92 : s===4 ? 1.04 : 1;
+  const bodyW = s===4 ? 43 : 38;
+  const bodyH = s===4 ? 56 : 52;
+  const headRx = s===4 ? 54 : 52;
+  const headRy = s===4 ? 50 : 50;
+
+  svg.innerHTML=`
+  <g id="kappa-inner" transform="translate(${100-100*scale} ${220-220*scale}) scale(${scale})">
+
+    <!-- 影 -->
+    <ellipse cx="100" cy="207" rx="72" ry="11" fill="rgba(0,0,0,.16)"/>
+
+    <!-- 尻尾 -->
+    <path d="M140 168 q26 7 35 31 q-23 3 -38 -14 Z"
+      fill="${skin}" stroke="${stroke}" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M155 181 q11 6 16 16" stroke="${stroke}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- 足 -->
+    <path d="M67 177 q-20 10 -24 28 q19 8 40-4 q9-16 1-29 Z"
+      fill="${skin}" stroke="${stroke}" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M133 177 q20 10 24 28 q-19 8-40-4 q-9-16-1-29 Z"
+      fill="${skin}" stroke="${stroke}" stroke-width="3" stroke-linejoin="round"/>
+
+    <!-- 足指 -->
+    <path d="M51 202 q5-7 9 1 M60 205 q5-7 9 1 M69 204 q5-6 8 1"
+      stroke="${stroke}" stroke-width="2.3" fill="none" stroke-linecap="round"/>
+    <path d="M149 202 q-5-7-9 1 M140 205 q-5-7-9 1 M131 204 q-5-6-8 1"
+      stroke="${stroke}" stroke-width="2.3" fill="none" stroke-linecap="round"/>
+
+    <!-- 体：漫画っぽく縦長 -->
+    <path d="M67 115
+             q-20 34 -12 72
+             q7 28 45 28
+             q38 0 45-28
+             q8-38 -12-72
+             q-12 15 -33 15
+             q-21 0 -33-15 Z"
+      fill="${skin}" stroke="${stroke}" stroke-width="3.5" stroke-linejoin="round"/>
+
+    <!-- お腹 -->
+    <ellipse cx="100" cy="166" rx="${bodyW}" ry="${bodyH}" fill="${belly}" opacity=".88"/>
+    <path d="M95 184 q5 8 10 0" stroke="${stroke}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- 腕：前に垂れる感じ -->
+    <path d="M65 124 q-16 30 -8 61 q7 10 17-1 q-2-28 8-52"
+      fill="${skin}" stroke="${stroke}" stroke-width="3.2" stroke-linejoin="round"/>
+    <path d="M135 124 q16 30 8 61 q-7 10-17-1 q2-28-8-52"
+      fill="${skin}" stroke="${stroke}" stroke-width="3.2" stroke-linejoin="round"/>
+
+    <!-- 手指 -->
+    <path d="M61 181 q3 8 8 0 M67 186 q4 7 8 0 M73 185 q4 6 7 0"
+      stroke="${stroke}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M139 181 q-3 8-8 0 M133 186 q-4 7-8 0 M127 185 q-4 6-7 0"
+      stroke="${stroke}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+
+    <!-- 頭：縦にボリューム出す -->
+    <ellipse cx="100" cy="78" rx="${headRx}" ry="${headRy}"
+      fill="${skin}" stroke="${stroke}" stroke-width="3.5"/>
+
+    <!-- 耳 -->
+    <circle cx="48" cy="84" r="10" fill="${skin}" stroke="${stroke}" stroke-width="3"/>
+    <circle cx="152" cy="84" r="10" fill="${skin}" stroke="${stroke}" stroke-width="3"/>
+
+    <!-- 皿 -->
+    <path d="M72 38 q28-18 56 0 q-2 13-28 14 q-26-1-28-14 Z"
+      fill="${dishFill}" stroke="${stroke}" stroke-width="3" stroke-linejoin="round"/>
+    <ellipse cx="100" cy="38" rx="25" ry="7" fill="${waterFill}" opacity=".7"/>
+    <path d="M82 36 q18-6 36 0" stroke="#fff" stroke-width="3.5" opacity=".6" fill="none" stroke-linecap="round"/>
+
+    <!-- 髪：お皿を囲んで頭頂から外ハネ -->
+    <path d="
+      M44 74
+      C 42 54, 52 36, 66 34
+      C 68 24, 76 20, 82 28
+      C 86 18, 94 18, 100 26
+      C 106 18, 114 18, 118 28
+      C 124 20, 132 24, 134 34
+      C 148 36, 158 54, 156 74
+      C 150 66, 144 60, 140 66
+      C 138 56, 132 52, 128 60
+      C 124 50, 118 48, 114 58
+      C 110 48, 106 46, 100 54
+      C 94 46, 90 48, 86 58
+      C 82 48, 76 50, 72 60
+      C 68 52, 62 56, 60 66
+      C 56 60, 50 66, 44 74 Z"
+      fill="${hair}" stroke="${hairStroke}" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <!-- 目 -->
+    ${eyes}
+
+    <!-- ほっぺ -->
+    <ellipse cx="60" cy="96" rx="9" ry="6" fill="#e8c0a8" opacity="${dead?'.2':'.5'}"/>
+    <ellipse cx="140" cy="96" rx="9" ry="6" fill="#e8c0a8" opacity="${dead?'.2':'.5'}"/>
+
+    <!-- くちばし：顔中央・明るめベージュ・幅広 -->
+    <!-- 上くちばし -->
+    <path d="M65 94 C 68 84, 82 80, 100 80 C 118 80, 132 84, 135 94 C 128 100, 116 103, 100 103 C 84 103, 72 100, 65 94 Z"
+      fill="${billFill}" stroke="${billStroke}" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- ハイライト -->
+    <path d="M76 86 C 86 82, 114 82, 124 86" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".55"/>
+    <!-- 鼻孔 -->
+    <ellipse cx="91" cy="92" rx="3" ry="2" fill="${billStroke}" opacity=".5"/>
+    <ellipse cx="109" cy="92" rx="3" ry="2" fill="${billStroke}" opacity=".5"/>
+    <!-- 下くちばし -->
+    <path d="M66 96 C 70 108, 84 113, 100 113 C 116 113, 130 108, 134 96 C 128 102, 116 105, 100 105 C 84 105, 72 102, 66 96 Z"
+      fill="${dead?'#b0a090':'#d8c0a0'}" stroke="${billStroke}" stroke-width="2.2" stroke-linejoin="round"/>
+    <!-- 口の境界 -->
+    <path d="M67 95 C 82 101, 118 101, 133 95" stroke="${billStroke}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+    <!-- 首線 -->
+    <path d="M76 124 q24 10 48 0" stroke="${stroke}" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".7"/>
+
+    ${s===5?'<circle cx="82" cy="72" r="3.5" fill="#fff176" opacity=".9"/><circle cx="118" cy="72" r="3.5" fill="#fff176" opacity=".9"/>':''}
+  </g>`;
+}
+
+// ===== 死亡 =====
+function triggerDeath(){
+  state.dead=true;
+  state.maxLevel=Math.max(state.maxLevel,state.level);
+  const w=document.getElementById('kappa-wrap');
+  w.className='dying';
+  document.getElementById('zzz').classList.remove('show');
+  setTimeout(()=>{
+    w.className='';drawKappa();
+    setSceneMode('dead-bg');
+    document.body.className='day';
+    document.getElementById('death-msg').innerHTML=`${state.name}は<br>天に召されました…`;
+    document.getElementById('death-record').textContent=`最高Lv.${state.maxLevel}　${STAGE_NAMES[state.stage]}まで育てた`;
+    document.getElementById('death-overlay').classList.add('show');
+    setButtonsDisabled(true);
+    saveState();
+  },1500);
+}
+document.getElementById('btn-revive').onclick=()=>{
+  const n=state.name,m=state.maxLevel;
+  Object.assign(state,{food:80,water:80,mood:80,level:1,exp:0,stage:0,dead:false,sleeping:false,
+    maxLevel:m,name:n,wakeUsed:false,care:{feed:0,water:0,pet:0,play:0,wake:0},blinking:false,expression:'normal'});
+  document.getElementById('death-overlay').classList.remove('show');
+  const night=isNightTime();
+  document.body.className=night?'night':'day';
+  document.getElementById('kappa-wrap').className='idle';
+  setButtonsDisabled(false);
+  applyDayNight(night,true);
+  saveState();updateUI();
+  say('あたらしいたまごがきた…！',2500);particles('🥚',5);
+};
+
+function setButtonsDisabled(v,except=[]){
+  ['btn-feed','btn-water','btn-pet','btn-play','btn-wake'].forEach(id=>{
+    if(!except.includes(id)) document.getElementById(id).disabled=v;
+  });
+}
+
+// ===== UI更新 =====
+function clamp(v){return Math.max(0,Math.min(100,v));}
+function updateUI(){
+  state.food=clamp(state.food);state.water=clamp(state.water);state.mood=clamp(state.mood);
+  document.getElementById('v-food').textContent=Math.round(state.food);
+  document.getElementById('v-water').textContent=Math.round(state.water);
+  document.getElementById('v-mood').textContent=Math.round(state.mood);
+  document.querySelector('#bar-food > div').style.width=state.food+'%';
+  document.querySelector('#bar-water > div').style.width=state.water+'%';
+  document.querySelector('#bar-mood > div').style.width=state.mood+'%';
+  document.getElementById('lv').textContent=state.level;
+  document.getElementById('stage-name').textContent=STAGE_NAMES[state.stage];
+  document.querySelector('#exp-bar > div').style.width=(state.exp/EXP_NEXT(state.level)*100)+'%';
+  const avg=(state.food+state.water+state.mood)/3;
+  if(state.stage>0&&!state.dead&&!state.sleeping) state.expression=avg>=70?'happy':avg<=30?'sad':'normal';
+  document.getElementById('btn-wake').disabled=!(state.sleeping&&!state.wakeUsed&&state.stage>0);
+  drawKappa();
+}
+
+// ===== 吹き出し・パーティクル =====
+let speechTimer;
+function say(text,ms=2200){
+  const s=document.getElementById('speech');
+  s.textContent=text;s.classList.add('show');
+  clearTimeout(speechTimer);
+  speechTimer=setTimeout(()=>s.classList.remove('show'),ms);
+}
+function toast(text,ms=1800){
+  const t=document.getElementById('toast');
+  t.innerHTML=text;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),ms);
+}
+function particles(emoji,n=5){
+  const scene=document.getElementById('scene');
+  for(let i=0;i<n;i++){
+    const p=document.createElement('div');p.className='particle';p.textContent=emoji;
+    p.style.left=(35+Math.random()*30)+'%';p.style.top=(35+Math.random()*25)+'%';
+    p.style.animationDelay=(i*0.1)+'s';
+    scene.appendChild(p);setTimeout(()=>p.remove(),1500+i*100);
+  }
+}
+function animate(cls){
+  if(state.dead||state.sleeping) return;
+  const w=document.getElementById('kappa-wrap');
+  w.className=cls;
+  setTimeout(()=>{ if(!state.dead&&!state.sleeping) w.className='idle'; },1300);
+}
+
+// ===== 経験値・進化 =====
+function gainExp(n){
+  state.exp+=n;
+  const need=EXP_NEXT(state.level);
+  if(state.exp>=need){
+    state.exp-=need;state.level++;
+    state.maxLevel=Math.max(state.maxLevel,state.level);
+    if(state.stage===0&&state.level>=3){
+      state.stage=1;
+      toast('🎉 たまごがかえった！<br>子ガッパたんじょう！',2500);particles('✨',8);
+    } else if(state.stage===1&&state.level>=7){
+      const c=state.care;
+      if(c.water>=c.feed&&c.water>=c.pet&&c.water>=c.play){
+        state.stage=3;toast('💧 みずガッパに進化した！',2500);
+      } else if(c.feed>=c.water&&c.feed>=c.pet&&c.feed>=c.play){
+        state.stage=4;toast('🥬 でぶガッパに進化した！',2500);
+      } else if(c.wake>0&&c.play>=c.feed&&c.play>=c.water){
+        state.stage=5;toast('🌙 夜行性ガッパに進化した！',2500);
+      } else {
+        state.stage=2;toast('🎊 大人ガッパに成長した！',2500);
+      }
+      particles('🌟',8);
+    } else {
+      toast('⬆️ Lv.'+state.level+' になった！');particles('✨',4);
+    }
+    animate('happy-jump');
+  }
+}
+
+// ===== アクション =====
+const FEED_LINES =['きゅうり！うまうま〜🥒','しゃくしゃく…おいしい！','きゅうりさいこう！'];
+const WATER_LINES=['お皿うるうる〜💧','きもちいい〜！','生きかえる〜！'];
+const PET_LINES  =['えへへ…','なでなで…うれしい','もっとなでて〜'];
+const PLAY_LINES =['たのしい〜！','もういっかい！','あそぶのだいすき！'];
+const EGG_LINES  =['…（たまごがゆれている）','…（中からコンコン音がする）','…（あたたかい）'];
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+let busy=false;
+function action(fn){
+  if(busy||state.dead||state.sleeping) return;busy=true;
+  fn();updateUI();saveState();
+  setTimeout(()=>busy=false,600);
+}
+document.getElementById('btn-feed').onclick=()=>action(()=>{
+  if(state.stage===0){say(pick(EGG_LINES));gainExp(3);animate('wiggle');return;}
+  if(state.food>=98){say('おなかいっぱい…');return;}
+  state.food+=22;state.mood+=4;state.care.feed++;
+  say(pick(FEED_LINES));particles('🥒',3);gainExp(5);animate('wiggle');
+});
+document.getElementById('btn-water').onclick=()=>action(()=>{
+  if(state.stage===0){say(pick(EGG_LINES));gainExp(3);animate('wiggle');return;}
+  if(state.water>=98){say('お皿はもう満タンだよ');return;}
+  state.water+=26;state.mood+=3;state.care.water++;
+  say(pick(WATER_LINES));particles('💧',4);gainExp(5);
+});
+document.getElementById('btn-pet').onclick=()=>action(()=>{
+  if(state.stage===0){say(pick(EGG_LINES));gainExp(2);animate('wiggle');return;}
+  state.mood+=12;state.care.pet++;
+  say(pick(PET_LINES));particles('💗',4);gainExp(4);animate('wiggle');
+});
+document.getElementById('btn-play').onclick=()=>action(()=>{
+  if(state.stage===0){say(pick(EGG_LINES));gainExp(2);animate('wiggle');return;}
+  if(state.food<15){say('おなかすいて遊べない…');return;}
+  state.mood+=16;state.food-=8;state.water-=6;state.care.play++;
+  say(pick(PLAY_LINES));particles('⚽',3);gainExp(8);animate('happy-jump');
+});
+document.getElementById('kappa-wrap').onclick=()=>{
+  if(state.dead) return;
+  if(state.sleeping){say('すやすや…💤');return;}
+  if(state.stage===0){say(pick(EGG_LINES));animate('wiggle');return;}
+  state.mood+=3;updateUI();saveState();
+  say(pick(['なに〜？','よんだ？','ぷに…']));particles('💗',1);animate('wiggle');
+};
+
+// ===== 時間経過 =====
+setInterval(()=>{
+  if(state.dead||state.stage===0||state.sleeping) return;
+  state.food-=0.6;state.water-=0.8;state.mood-=0.5;
+  if(state.water<15&&Math.random()<.4) say('お皿がカラカラ…！💦');
+  else if(state.food<15&&Math.random()<.4) say('おなかすいたよ〜…😢');
+  else if(state.mood<15&&Math.random()<.4) say('かなしい…遊んでほしい…');
+  if((state.food<=0&&state.water<=0)||(state.water<=0)){triggerDeath();return;}
+  updateUI();saveState();
+},3000);
+
+// 昼夜切り替えチェック
+let lastNight=isNightTime();
+setInterval(()=>{
+  if(state.dead) return;
+  const night=isNightTime();
+  if(night!==lastNight){lastNight=night;applyDayNight(night);}
+},60000);
+
+// 瞬き
+setInterval(()=>{
+  if(state.stage===0||state.dead||state.sleeping) return;
+  state.blinking=true;drawKappa();
+  setTimeout(()=>{state.blinking=false;drawKappa();},160);
+},3200+Math.random()*1500);
+
+// ===== 名前変更 =====
+document.getElementById('btn-rename').onclick=()=>{
+  document.getElementById('name-input').value=state.name;
+  document.getElementById('name-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('name-input').focus(),50);
+};
+document.getElementById('name-cancel').onclick=()=>document.getElementById('name-modal').classList.remove('show');
+document.getElementById('name-ok').onclick=()=>{
+  const val=document.getElementById('name-input').value.trim();
+  if(val){state.name=val;document.getElementById('kappa-name').textContent=val;saveState();say(val+'だね！よろしく〜',2200);}
+  document.getElementById('name-modal').classList.remove('show');
+};
+document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('name-ok').click();});
+
+// ===== 起動 =====
+const night=isNightTime();lastNight=night;
+if(state.dead){
+  setSceneMode('dead-bg');
+  document.getElementById('death-msg').innerHTML=`${state.name}は<br>天に召されました…`;
+  document.getElementById('death-record').textContent=`最高Lv.${state.maxLevel}　${STAGE_NAMES[state.stage]}まで育てた`;
+  document.getElementById('death-overlay').classList.add('show');
+  setButtonsDisabled(true);
+} else {
+  applyDayNight(night,true);
+}
+updateUI();
+if(!state.dead) say(saved?'おかえり〜！':'たまごをお世話してかえそう！',2500);
+</script>
+</body>
+</html>
