@@ -161,7 +161,7 @@
     <div id="kappa-wrap" class="idle">
       <div id="kappa-inner">
         <svg id="kappa-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%"></svg>
-        <img id="kappa-img" src="kappa01.PNG" style="display:none;width:100%;filter:none;mix-blend-mode:multiply" alt="カッパ">
+        <canvas id="kappa-canvas" style="display:none;width:100%;image-rendering:auto"></canvas>
       </div>
     </div>
     <div id="death-overlay">
@@ -189,6 +189,23 @@
 <div id="toast"></div>
 
 <script>
+// ===== kappa01.PNG 白背景除去 =====
+const kappaCanvas=document.getElementById('kappa-canvas');
+const kappaCtx=kappaCanvas.getContext('2d');
+const kappaSourceImg=new Image();
+kappaSourceImg.src='kappa01.PNG';
+kappaSourceImg.onload=()=>{
+  kappaCanvas.width=kappaSourceImg.naturalWidth;
+  kappaCanvas.height=kappaSourceImg.naturalHeight;
+  kappaCtx.drawImage(kappaSourceImg,0,0);
+  const d=kappaCtx.getImageData(0,0,kappaCanvas.width,kappaCanvas.height);
+  for(let i=0;i<d.data.length;i+=4){
+    const r=d.data[i],g=d.data[i+1],b=d.data[i+2];
+    if(r>220&&g>220&&b>220) d.data[i+3]=0;
+  }
+  kappaCtx.putImageData(d,0,0);
+};
+
 // ===== セーブ・ロード =====
 const SAVE_KEY='punisuke_v1';
 function saveState(){
@@ -363,7 +380,7 @@ function drawKappa(){
   // ===== たまご =====
   if(s===0){
     svg.style.display='block';
-    document.getElementById('kappa-img').style.display='none';
+    document.getElementById('kappa-canvas').style.display='none';
     svg.innerHTML=`
       <g id="kappa-inner">
         <ellipse cx="100" cy="200" rx="60" ry="12" fill="rgba(0,0,0,.12)"/>
@@ -379,9 +396,9 @@ function drawKappa(){
 
   // ===== kappa01.PNG画像を使用 =====
   svg.style.display='none';
-  const img=document.getElementById('kappa-img');
-  img.style.display='block';
-  img.style.filter=dead?'grayscale(80%) opacity(0.5)':'none';
+  const cnv=document.getElementById('kappa-canvas');
+  cnv.style.display='block';
+  cnv.style.filter=dead?'grayscale(80%) opacity(0.5)':'none';
 }
 
 // ===== 死亡 =====
