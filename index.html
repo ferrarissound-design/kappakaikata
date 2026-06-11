@@ -385,20 +385,25 @@ function drawKappa(){
       <circle cx="120.5" cy="82.5" r="1.4" fill="#fff"/>`;
   }
 
-  // ===== たまご =====
+  // ===== たまご（canvasに描画） =====
   if(s===0){
-    document.getElementById('kappa-canvas').style.display='none';
-    svg.style.display='block';
-    svg.innerHTML=`
-      <g id="kappa-inner">
-        <ellipse cx="100" cy="200" rx="60" ry="12" fill="rgba(0,0,0,.12)"/>
-        <path d="M100 38 C142 38 164 96 164 144 C164 185 135 205 100 205 C65 205 36 185 36 144 C36 96 58 38 100 38 Z"
-          fill="#eef3e2" stroke="#c9d6b4" stroke-width="3"/>
-        <path d="M58 122 l13 13 l12 -16 l13 16 l12 -16 l13 16 l13 -13"
-          stroke="#a8c08a" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <ellipse cx="82" cy="78" rx="13" ry="22" fill="rgba(255,255,255,.55)" transform="rotate(-22 82 78)"/>
-        ${state.exp>EXP_NEXT(state.level)*0.5?'<path d="M95 58 l11 16 l-13 4 z" fill="#cdd9b8"/>':''}
-      </g>`;
+    svg.style.display='none';
+    const cnv=document.getElementById('kappa-canvas');
+    cnv.style.display='block';
+    cnv.style.filter='none';
+    const crack=state.exp>EXP_NEXT(state.level)*0.5?'<path d="M95 58 l11 16 l-13 4 z" fill="#cdd9b8"/>':'';
+    const eggSvg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220">
+      <ellipse cx="100" cy="200" rx="60" ry="12" fill="rgba(0,0,0,.12)"/>
+      <path d="M100 38 C142 38 164 96 164 144 C164 185 135 205 100 205 C65 205 36 185 36 144 C36 96 58 38 100 38 Z" fill="#eef3e2" stroke="#c9d6b4" stroke-width="3"/>
+      <path d="M58 122 l13 13 l12 -16 l13 16 l12 -16 l13 16 l13 -13" stroke="#a8c08a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <ellipse cx="82" cy="78" rx="13" ry="22" fill="rgba(255,255,255,.55)" transform="rotate(-22 82 78)"/>
+      ${crack}
+    </svg>`;
+    const blob=new Blob([eggSvg],{type:'image/svg+xml'});
+    const url=URL.createObjectURL(blob);
+    const img=new Image();
+    img.onload=()=>{cnv.width=200;cnv.height=220;cnv.getContext('2d').drawImage(img,0,0);URL.revokeObjectURL(url);};
+    img.src=url;
     return;
   }
 
