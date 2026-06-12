@@ -132,6 +132,15 @@
   #name-btns button { flex:1; border:none; border-radius:12px; padding:10px; font-size:14px; font-weight:bold; font-family:inherit; cursor:pointer; }
   #name-cancel { background:#e8e8e8; color:#666; }
   #name-ok { background:linear-gradient(180deg,#7cb342,#689f38); color:#fff; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+  .confirm-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:31; align-items:center; justify-content:center; }
+  .confirm-modal.show { display:flex; }
+  #reset-box { background:#fff; border-radius:20px; padding:24px 20px; width:80%; max-width:300px; box-shadow:0 8px 30px rgba(0,0,0,.25); display:flex; flex-direction:column; gap:14px; }
+  #reset-box h2 { text-align:center; color:#d32f2f; font-size:16px; }
+  #reset-msg { font-size:13px; color:#555; line-height:1.5; text-align:center; }
+  #reset-btns { display:flex; gap:10px; }
+  #reset-btns button { flex:1; border:none; border-radius:12px; padding:10px; font-size:14px; font-weight:bold; font-family:inherit; cursor:pointer; }
+  #reset-cancel { background:#e8e8e8; color:#666; }
+  #reset-ok { background:linear-gradient(180deg,#ef5350,#d32f2f); color:#fff; box-shadow:0 3px 0 rgba(0,0,0,.15); }
   #toast { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:rgba(62,107,79,.95); color:#fff; padding:14px 26px; border-radius:20px; font-size:16px; font-weight:bold; opacity:0; pointer-events:none; transition:opacity .4s; z-index:20; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,.3); }
   #toast.show { opacity:1; }
 
@@ -222,6 +231,7 @@
     <div id="menu-btns">
       <button class="mini-btn" id="btn-achv" title="実績">🏆</button>
       <button class="mini-btn" id="btn-hist" title="育成記録">📊</button>
+      <button class="mini-btn" id="btn-reset" title="最初から">🔄</button>
     </div>
     <div id="minigame-overlay">
       <div id="mg-info">🥒 きゅうりキャッチ！ <span id="mg-score">0</span>点 / 残り<span id="mg-time">15</span>秒</div>
@@ -248,6 +258,13 @@
     <h2>なまえをかえる</h2>
     <input id="name-input" type="text" maxlength="8" placeholder="ぷにすけ">
     <div id="name-btns"><button id="name-cancel">やめる</button><button id="name-ok">きめた！</button></div>
+  </div>
+</div>
+<div id="reset-modal" class="confirm-modal">
+  <div id="reset-box">
+    <h2>最初からはじめる？</h2>
+    <p id="reset-msg">なまえ・レベル・実績・育成記録など、すべてのデータが消えてやり直しになります。よろしいですか？</p>
+    <div id="reset-btns"><button id="reset-cancel">やめる</button><button id="reset-ok">最初から！</button></div>
   </div>
 </div>
 <div id="toast"></div>
@@ -711,6 +728,14 @@ document.getElementById('name-ok').onclick=()=>{
   document.getElementById('name-modal').classList.remove('show');
 };
 document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('name-ok').click();});
+
+// ===== 最初からはじめる（データリセット） =====
+document.getElementById('btn-reset').onclick=()=>document.getElementById('reset-modal').classList.add('show');
+document.getElementById('reset-cancel').onclick=()=>document.getElementById('reset-modal').classList.remove('show');
+document.getElementById('reset-ok').onclick=()=>{
+  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+  location.reload();
+};
 
 // ===== 実績 =====
 const ACHIEVEMENTS=[
