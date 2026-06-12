@@ -76,7 +76,6 @@
   #scene.night-bg .zabuton-center { background:radial-gradient(ellipse, rgba(0,0,0,.25), transparent 70%); }
 
   #kappa-wrap { position:absolute; bottom:-10%; left:50%; transform:translateX(-50%); width:80%; max-width:320px; cursor:pointer; }
-  #kappa-inner { position:relative; }
   .idle       #kappa-inner { animation:bob 2.6s ease-in-out infinite; }
   .happy-jump #kappa-inner { animation:jump .5s ease 2; }
   .wiggle     #kappa-inner { animation:wig .4s ease 3; }
@@ -215,8 +214,7 @@
     <div id="kappa-wrap" class="idle">
       <div id="kappa-inner">
         <svg id="kappa-svg" viewBox="0 0 200 220" width="200" height="220" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto"></svg>
-        <canvas id="kappa-canvas-0" style="display:none;position:absolute;top:0;left:0;width:100%;image-rendering:auto;transition:opacity 0.6s"></canvas>
-        <canvas id="kappa-canvas-1" style="display:none;position:absolute;top:0;left:0;width:100%;image-rendering:auto;transition:opacity 0.6s;opacity:0"></canvas>
+        <canvas id="kappa-canvas" style="display:none;width:100%;image-rendering:auto;transition:opacity 0.5s"></canvas>
       </div>
     </div>
     <div id="warn-banner"></div>
@@ -286,11 +284,8 @@ document.addEventListener('click',()=>startBgm(),{once:true});
 document.addEventListener('touchstart',()=>startBgm(),{once:true});
 
 // ===== カッパ画像 白背景除去 =====
-const kappaCanvases=[document.getElementById('kappa-canvas-0'),document.getElementById('kappa-canvas-1')];
-const kappaCtxs=kappaCanvases.map(c=>c.getContext('2d'));
-let activeCnv=0;
-// drawKappa内で参照するエイリアス（常にアクティブcanvasを指す関数で取得）
-function getKappaCanvas(){ return kappaCanvases[activeCnv]; }
+const kappaCanvas=document.getElementById('kappa-canvas');
+const kappaCtx=kappaCanvas.getContext('2d');
 
 function removeWhiteBg(imgEl){
   const oc=document.createElement('canvas');
@@ -314,35 +309,25 @@ function onKappaLoaded(){
   kappaLoaded++;
   if(kappaLoaded===2) startKappaSwitch();
 }
-function drawToCanvas(idx, cnv, ctx){
-  const src=kappaImages[idx];
-  if(!src) return;
-  cnv.width=src.width; cnv.height=src.height;
-  ctx.clearRect(0,0,src.width,src.height);
-  ctx.drawImage(src,0,0);
-}
 function startKappaSwitch(){
   showKappa(0);
   setInterval(()=>{
     kappaIdx=(kappaIdx+1)%2;
-    const next=(activeCnv+1)%2;
-    // 非表示側に先に描いてからクロスフェード
-    drawToCanvas(kappaIdx, kappaCanvases[next], kappaCtxs[next]);
-    kappaCanvases[next].style.display='block';
-    kappaCanvases[next].style.opacity='0';
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      kappaCanvases[next].style.opacity='1';
-      kappaCanvases[activeCnv].style.opacity='0';
-      const prev=activeCnv;
-      activeCnv=next;
-      setTimeout(()=>{ kappaCanvases[prev].style.display='none'; },700);
-    }));
+    // フェードアウト
+    kappaCanvas.style.opacity='0';
+    // 半分経過したところで描き替え（不可視なのでフラッシュなし）
+    setTimeout(()=>{ showKappa(kappaIdx); },300);
+    // フェードイン
+    setTimeout(()=>{ kappaCanvas.style.opacity='1'; },500);
   },20000);
 }
 function showKappa(idx){
-  drawToCanvas(idx, kappaCanvases[activeCnv], kappaCtxs[activeCnv]);
-  kappaCanvases[activeCnv].style.display='block';
-  kappaCanvases[activeCnv].style.opacity='1';
+  const src=kappaImages[idx];
+  if(!src) return;
+  kappaCanvas.width=src.width; kappaCanvas.height=src.height;
+  kappaCtx.clearRect(0,0,src.width,src.height);
+  kappaCtx.drawImage(src,0,0);
+  kappaCanvas.style.display='block';
 }
 
 ['PNG画像.png','IMG_2456.png'].forEach((src,i)=>{
@@ -533,7 +518,7 @@ function drawKappa(){
   }
 
   // ===== kappa01.PNG画像を使用 =====
-  svg.style.visibility='hidden'; // display:noneにするとkappa-innerの高さが0になるためvisibility:hiddenで高さを保持
+  svg.style.display='none';
   let f;
   if(dead) f='grayscale(80%) opacity(0.5)';
   else if(sleep) f='brightness(0.7) saturate(0.6) hue-rotate(20deg)';
@@ -543,7 +528,7 @@ function drawKappa(){
     else if(avg<=30) f='brightness(0.8) saturate(0.7) hue-rotate(200deg) contrast(1.1)';
     else f='none';
   }
-  kappaCanvases.forEach(c=>{ c.style.filter=f; });
+  kappaCanvas.style.filter=f;
 }
 
 // ===== 死亡 =====
