@@ -318,23 +318,21 @@ function removeWhiteBg(imgEl){
   return oc;
 }
 
-const kappaImages=[null,null];
+const kappaImages=[null,null,null];
 let kappaIdx=0;
 let kappaLoaded=0;
+const KAPPA_COUNT=3;
 
 function onKappaLoaded(){
   kappaLoaded++;
-  if(kappaLoaded===2) startKappaSwitch();
+  if(kappaLoaded===KAPPA_COUNT) startKappaSwitch();
 }
 function startKappaSwitch(){
   showKappa(0);
   setInterval(()=>{
-    kappaIdx=(kappaIdx+1)%2;
-    // フェードアウト
+    kappaIdx=(kappaIdx+1)%KAPPA_COUNT;
     kappaCanvas.style.opacity='0';
-    // 半分経過したところで描き替え（不可視なのでフラッシュなし）
     setTimeout(()=>{ showKappa(kappaIdx); },300);
-    // フェードイン
     setTimeout(()=>{ kappaCanvas.style.opacity='1'; },500);
   },20000);
 }
@@ -347,7 +345,7 @@ function showKappa(idx){
   kappaCanvas.style.display='block';
 }
 
-['PNG画像.png','IMG_2456.png'].forEach((src,i)=>{
+['PNG画像.png','IMG_2456.png','A168C9FE-E92B-41E8-BB37-4EF14DB8F23A.png'].forEach((src,i)=>{
   const img=new Image();
   img.onload=()=>{ kappaImages[i]=removeWhiteBg(img); onKappaLoaded(); };
   img.src=src;
