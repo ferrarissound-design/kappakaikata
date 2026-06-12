@@ -533,7 +533,7 @@ function drawKappa(){
   }
 
   // ===== kappa01.PNG画像を使用 =====
-  svg.style.display='none';
+  svg.style.visibility='hidden'; // display:noneにするとkappa-innerの高さが0になるためvisibility:hiddenで高さを保持
   let f;
   if(dead) f='grayscale(80%) opacity(0.5)';
   else if(sleep) f='brightness(0.7) saturate(0.6) hue-rotate(20deg)';
