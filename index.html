@@ -330,7 +330,8 @@ function onKappaLoaded(){
 function startKappaSwitch(){
   showKappa(0);
   setInterval(()=>{
-    kappaIdx=(kappaIdx+1)%KAPPA_COUNT;
+    let next; do { next=Math.floor(Math.random()*KAPPA_COUNT); } while(next===kappaIdx);
+    kappaIdx=next;
     kappaCanvas.style.opacity='0';
     setTimeout(()=>{ showKappa(kappaIdx); },300);
     setTimeout(()=>{ kappaCanvas.style.opacity='1'; },500);
