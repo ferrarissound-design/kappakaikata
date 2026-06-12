@@ -368,13 +368,12 @@ function setSceneMode(mode){
 }
 
 // ===== 状態 =====
-// stage: 0=たまご 1=子ガッパ 2=大人ガッパ 3=みずガッパ 4=でぶガッパ 5=夜行性ガッパ
-const STAGE_NAMES=['たまご','子ガッパ','大人ガッパ','みずガッパ','でぶガッパ','夜行性ガッパ'];
+const STAGE_NAMES=['子ガッパ'];
 const EXP_NEXT=lv=>20+lv*15;
 const saved=loadState();
 const state={
   food:80,water:80,mood:80,
-  level:1,exp:0,stage:0,
+  level:1,exp:0,stage:1,
   name:'ぷにすけ',dead:false,maxLevel:1,
   care:{feed:0,water:0,pet:0,play:0,wake:0},
   wakeUsed:false,sleeping:false,
@@ -387,7 +386,7 @@ const state={
 if(saved){
   Object.assign(state,{
     food:saved.food??80,water:saved.water??80,mood:saved.mood??80,
-    level:saved.level??1,exp:saved.exp??0,stage:saved.stage??0,
+    level:saved.level??1,exp:saved.exp??0,stage:1,
     name:saved.name??'ぷにすけ',dead:saved.dead??false,maxLevel:saved.maxLevel??1,
     care:saved.care??{feed:0,water:0,pet:0,play:0,wake:0},
     wakeUsed:saved.wakeUsed??false,
@@ -516,28 +515,6 @@ function drawKappa(){
       <circle cx="120.5" cy="82.5" r="1.4" fill="#fff"/>`;
   }
 
-  // ===== たまご（canvasに描画） =====
-  if(s===0){
-    svg.style.display='none';
-    const cnv=document.getElementById('kappa-canvas');
-    cnv.style.display='block';
-    cnv.style.filter='none';
-    const crack=state.exp>EXP_NEXT(state.level)*0.5?'<path d="M95 58 l11 16 l-13 4 z" fill="#cdd9b8"/>':'';
-    const eggSvg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220">
-      <ellipse cx="100" cy="200" rx="60" ry="12" fill="rgba(0,0,0,.12)"/>
-      <path d="M100 38 C142 38 164 96 164 144 C164 185 135 205 100 205 C65 205 36 185 36 144 C36 96 58 38 100 38 Z" fill="#eef3e2" stroke="#c9d6b4" stroke-width="3"/>
-      <path d="M58 122 l13 13 l12 -16 l13 16 l12 -16 l13 16 l13 -13" stroke="#a8c08a" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <ellipse cx="82" cy="78" rx="13" ry="22" fill="rgba(255,255,255,.55)" transform="rotate(-22 82 78)"/>
-      ${crack}
-    </svg>`;
-    const blob=new Blob([eggSvg],{type:'image/svg+xml'});
-    const url=URL.createObjectURL(blob);
-    const img=new Image();
-    img.onload=()=>{cnv.width=200;cnv.height=220;cnv.getContext('2d').drawImage(img,0,0);URL.revokeObjectURL(url);};
-    img.src=url;
-    return;
-  }
-
   // ===== kappa01.PNG画像を使用 =====
   svg.style.display='none';
   const cnv=document.getElementById('kappa-canvas');
@@ -567,7 +544,7 @@ function triggerDeath(){
     setSceneMode('dead-bg');
     document.body.className='day';
     document.getElementById('death-msg').innerHTML=`${state.name}は<br>天に召されました…`;
-    document.getElementById('death-record').textContent=`最高Lv.${state.maxLevel}　${STAGE_NAMES[state.stage]}まで育てた`;
+    document.getElementById('death-record').textContent=`最高Lv.${state.maxLevel}　${'子ガッパ'}まで育てた`;
     document.getElementById('death-overlay').classList.add('show');
     setButtonsDisabled(true);
     saveState();
@@ -575,7 +552,7 @@ function triggerDeath(){
 }
 document.getElementById('btn-revive').onclick=()=>{
   const n=state.name,m=state.maxLevel;
-  Object.assign(state,{food:80,water:80,mood:80,level:1,exp:0,stage:0,dead:false,sleeping:false,
+  Object.assign(state,{food:80,water:80,mood:80,level:1,exp:0,stage:1,dead:false,sleeping:false,
     maxLevel:m,name:n,wakeUsed:false,care:{feed:0,water:0,pet:0,play:0,wake:0},blinking:false,expression:'normal'});
   document.getElementById('death-overlay').classList.remove('show');
   const night=isNightTime();
@@ -604,7 +581,7 @@ function updateUI(){
   document.querySelector('#bar-water > div').style.width=state.water+'%';
   document.querySelector('#bar-mood > div').style.width=state.mood+'%';
   document.getElementById('lv').textContent=state.level;
-  document.getElementById('stage-name').textContent=STAGE_NAMES[state.stage];
+  document.getElementById('stage-name').textContent='子ガッパ';
   document.querySelector('#exp-bar > div').style.width=(state.exp/EXP_NEXT(state.level)*100)+'%';
   const avg=(state.food+state.water+state.mood)/3;
   if(state.stage>0&&!state.dead&&!state.sleeping) state.expression=avg>=70?'happy':avg<=30?'sad':'normal';
@@ -642,37 +619,14 @@ function animate(cls){
   setTimeout(()=>{ if(!state.dead&&!state.sleeping) w.className='idle'; },1300);
 }
 
-// ===== 経験値・進化 =====
+// ===== 経験値 =====
 function gainExp(n){
   state.exp+=n;
   const need=EXP_NEXT(state.level);
   if(state.exp>=need){
     state.exp-=need;state.level++;
     state.maxLevel=Math.max(state.maxLevel,state.level);
-    if(state.stage===0&&state.level>=3){
-      state.stage=1;
-      evoFlash();
-      toast('🎉 たまごがかえった！<br>子ガッパたんじょう！',2500);particles('✨',8);
-      unlockAchv('first_hatch');
-    } else if(state.stage===1&&state.level>=7){
-      const c=state.care;
-      if(c.water>=c.feed&&c.water>=c.pet&&c.water>=c.play){
-        state.stage=3;toast('💧 みずガッパに進化した！',2500);
-      } else if(c.feed>=c.water&&c.feed>=c.pet&&c.feed>=c.play){
-        state.stage=4;toast('🥬 でぶガッパに進化した！',2500);
-      } else if(c.wake>0&&c.play>=c.feed&&c.play>=c.water){
-        state.stage=5;toast('🌙 夜行性ガッパに進化した！',2500);
-      } else {
-        state.stage=2;toast('🎊 大人ガッパに成長した！',2500);
-      }
-      evoFlash();
-      state.totals.evolve++;
-      unlockAchv('first_evolve');
-      checkAchievements();
-      particles('🌟',8);
-    } else {
-      toast('⬆️ Lv.'+state.level+' になった！');particles('✨',4);
-    }
+    toast('⬆️ Lv.'+state.level+' になった！');particles('✨',4);
     animate('happy-jump');
   }
 }
@@ -682,7 +636,6 @@ const FEED_LINES =['きゅうり！うまうま〜🥒','しゃくしゃく…�
 const WATER_LINES=['お皿うるうる〜💧','きもちいい〜！','生きかえる〜！'];
 const PET_LINES  =['えへへ…','なでなで…うれしい','もっとなでて〜'];
 const PLAY_LINES =['たのしい〜！','もういっかい！','あそぶのだいすき！'];
-const EGG_LINES  =['…（たまごがゆれている）','…（中からコンコン音がする）','…（あたたかい）'];
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 
 let busy=false;
@@ -692,24 +645,20 @@ function action(fn){
   setTimeout(()=>busy=false,600);
 }
 document.getElementById('btn-feed').onclick=()=>action(()=>{
-  if(state.stage===0){say(pick(EGG_LINES));gainExp(3);animate('wiggle');return;}
   if(state.food>=98){say('おなかいっぱい…');return;}
   state.food+=22;state.mood+=4;state.care.feed++;state.totals.feed++;
   say(pick(FEED_LINES));particles('🥒',3);gainExp(5);animate('wiggle');checkAchievements();
 });
 document.getElementById('btn-water').onclick=()=>action(()=>{
-  if(state.stage===0){say(pick(EGG_LINES));gainExp(3);animate('wiggle');return;}
   if(state.water>=98){say('お皿はもう満タンだよ');return;}
   state.water+=26;state.mood+=3;state.care.water++;state.totals.water++;
   say(pick(WATER_LINES));particles('💧',4);gainExp(5);checkAchievements();
 });
 document.getElementById('btn-pet').onclick=()=>action(()=>{
-  if(state.stage===0){say(pick(EGG_LINES));gainExp(2);animate('wiggle');return;}
   state.mood+=12;state.care.pet++;state.totals.pet++;
   say(pick(PET_LINES));particles('💗',4);gainExp(4);animate('wiggle');checkAchievements();
 });
 document.getElementById('btn-play').onclick=()=>action(()=>{
-  if(state.stage===0){say(pick(EGG_LINES));gainExp(2);animate('wiggle');return;}
   if(state.food<15){say('おなかすいて遊べない…');return;}
   state.food-=8;state.water-=6;state.care.play++;state.totals.play++;
   say(pick(PLAY_LINES));
@@ -719,7 +668,6 @@ document.getElementById('btn-play').onclick=()=>action(()=>{
 document.getElementById('kappa-wrap').onclick=()=>{
   if(state.dead) return;
   if(state.sleeping){say('すやすや…💤');return;}
-  if(state.stage===0){say(pick(EGG_LINES));animate('wiggle');return;}
   state.mood+=3;updateUI();saveState();
   say(pick(['なに〜？','よんだ？','ぷに…']));particles('💗',1);animate('wiggle');
 };
@@ -766,8 +714,6 @@ document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key===
 
 // ===== 実績 =====
 const ACHIEVEMENTS=[
-  {id:'first_hatch', icon:'🐣', name:'はじめての誕生', desc:'たまごをかえした'},
-  {id:'first_evolve',icon:'🌟', name:'はじめての進化', desc:'子ガッパから進化させた'},
   {id:'pet100',      icon:'🤚', name:'なでなでマスター', desc:'累計100回なでた'},
   {id:'feed50',      icon:'🥒', name:'きゅうりソムリエ', desc:'累計50本きゅうりをあげた'},
   {id:'water50',     icon:'💧', name:'うるおいキーパー', desc:'累計50回水をかけた'},
@@ -811,7 +757,7 @@ document.getElementById('achv-close').onclick=()=>document.getElementById('achv-
 // ===== 育成記録 =====
 function addHistory(){
   state.history.unshift({
-    name:state.name,lv:state.level,stage:STAGE_NAMES[state.stage],
+    name:state.name,lv:state.level,stage:'子ガッパ',
     date:new Date().toLocaleDateString('ja-JP')
   });
   if(state.history.length>20) state.history.length=20;
@@ -843,7 +789,7 @@ function checkLoginBonus(){
     state.loginStreak=newStreak;
     state.lastLogin=today;
     state.mood=Math.min(100,state.mood+10);
-    if(state.stage>0&&!state.dead) gainExp(bonusExp); else state.exp+=bonusExp;
+    if(!state.dead) gainExp(bonusExp); else state.exp+=bonusExp;
     checkAchievements();updateUI();saveState();
   };
 }
@@ -876,14 +822,6 @@ function updateWeather(){
 setupRain();
 setInterval(updateWeather,120000);
 
-// ===== 進化フラッシュ =====
-function evoFlash(){
-  const f=document.getElementById('evo-flash');
-  f.classList.remove('flash');
-  void f.offsetWidth;
-  f.classList.add('flash');
-}
-
 // ===== 時間帯セリフ =====
 const TIME_LINES={
   morning:['おはよう！today もげんき！','あさのきゅうりはうまい','んー！いいあさ！'],
@@ -891,7 +829,7 @@ const TIME_LINES={
   evening:['ゆうやけきれいだね','そろそろねむくなってきた…','きょうもありがとう'],
 };
 function randomTimeTalk(){
-  if(state.dead||state.sleeping||state.stage===0) return;
+  if(state.dead||state.sleeping) return;
   if(Math.random()>0.3) return;
   const h=new Date().getHours();
   const lines=h<11?TIME_LINES.morning:h<17?TIME_LINES.noon:TIME_LINES.evening;
@@ -912,7 +850,7 @@ function updateWarnBanner(){
 // ===== ミニゲーム：きゅうりキャッチ =====
 let mgActive=false;
 function startMinigame(){
-  if(mgActive||state.dead||state.sleeping||state.stage===0) return;
+  if(mgActive||state.dead||state.sleeping) return;
   mgActive=true;
   const ov=document.getElementById('minigame-overlay');
   const basket=document.getElementById('mg-basket');
@@ -998,7 +936,7 @@ function startMinigame(){
     state.mood=Math.min(100,state.mood+Math.min(score,20));
     toast(`🧺 ${score}点キャッチ！<br>経験値 +${expGain}`,2500);
     say(score>=10?'いっぱいとれた〜！':'たのしかった！',2500);
-    if(state.stage>0) gainExp(expGain);
+    gainExp(expGain);
     checkAchievements();updateUI();saveState();
   }
 }
@@ -1008,7 +946,7 @@ const night=isNightTime();lastNight=night;
 if(state.dead){
   setSceneMode('dead-bg');
   document.getElementById('death-msg').innerHTML=`${state.name}は<br>天に召されました…`;
-  document.getElementById('death-record').textContent=`最高Lv.${state.maxLevel}　${STAGE_NAMES[state.stage]}まで育てた`;
+  document.getElementById('death-record').textContent=`最高Lv.${state.maxLevel}　${'子ガッパ'}まで育てた`;
   document.getElementById('death-overlay').classList.add('show');
   setButtonsDisabled(true);
 } else {
