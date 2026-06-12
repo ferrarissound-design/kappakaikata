@@ -833,19 +833,19 @@ function checkLoginBonus(){
   const today=new Date().toLocaleDateString('ja-JP');
   if(state.lastLogin===today) return;
   const yesterday=new Date(Date.now()-86400000).toLocaleDateString('ja-JP');
-  state.loginStreak=(state.lastLogin===yesterday)?state.loginStreak+1:1;
-  state.lastLogin=today;
-  const bonusExp=5+Math.min(state.loginStreak,7)*3;
-  document.getElementById('lb-days').textContent='🔥 '+state.loginStreak+'日れんぞく！';
+  const newStreak=(state.lastLogin===yesterday)?state.loginStreak+1:1;
+  const bonusExp=5+Math.min(newStreak,7)*3;
+  document.getElementById('lb-days').textContent='🔥 '+newStreak+'日れんぞく！';
   document.getElementById('lb-msg').innerHTML=`きょうも来てくれてありがとう！<br>ボーナス：経験値 +${bonusExp}　機嫌 +10`;
   document.getElementById('login-modal').classList.add('show');
   document.getElementById('login-close').onclick=()=>{
     document.getElementById('login-modal').classList.remove('show');
+    state.loginStreak=newStreak;
+    state.lastLogin=today;
     state.mood=Math.min(100,state.mood+10);
     if(state.stage>0&&!state.dead) gainExp(bonusExp); else state.exp+=bonusExp;
     checkAchievements();updateUI();saveState();
   };
-  saveState();
 }
 
 // ===== 天気（ランダム雨） =====
