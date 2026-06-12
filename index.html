@@ -52,15 +52,49 @@
       repeating-linear-gradient(90deg, transparent, transparent calc(33.3% - 2px), #3a3450 calc(33.3% - 2px), #3a3450 33.3%);
   }
 
-  /* 畳の縁ライン */
+  /* 畳（目のテクスチャ＋縁） */
   .tatami-line { position:absolute; bottom:0; width:100%; height:52%; pointer-events:none; transition:opacity 2s; }
   #scene.day-bg .tatami-line {
-    background:linear-gradient(90deg, transparent calc(50% - 1.5px), #a89858 calc(50% - 1.5px), #a89858 calc(50% + 1.5px), transparent calc(50% + 1.5px));
+    background:
+      linear-gradient(180deg, #8a7a48 0, #8a7a48 4px, transparent 4px),
+      linear-gradient(90deg, transparent calc(50% - 4px), #7a6a3a calc(50% - 4px), #7a6a3a calc(50% + 4px), transparent calc(50% + 4px)),
+      repeating-linear-gradient(0deg, transparent 0 2px, rgba(110,95,50,.16) 2px 3px);
   }
   #scene.night-bg .tatami-line {
-    background:linear-gradient(90deg, transparent calc(50% - 1.5px), #3a3428 calc(50% - 1.5px), #3a3428 calc(50% + 1.5px), transparent calc(50% + 1.5px));
+    background:
+      linear-gradient(180deg, #3a3322 0, #3a3322 4px, transparent 4px),
+      linear-gradient(90deg, transparent calc(50% - 4px), #332d1e calc(50% - 4px), #332d1e calc(50% + 4px), transparent calc(50% + 4px)),
+      repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,0,0,.18) 2px 3px);
   }
   #scene.dead-bg .tatami-line { background:none; }
+
+  /* 掛け軸 */
+  .kakejiku { position:absolute; top:4%; left:50%; transform:translateX(-50%); width:11%; max-width:52px; height:36%; display:flex; align-items:center; justify-content:center; transition:background 2s,box-shadow 2s; }
+  .kakejiku::before, .kakejiku::after { content:''; position:absolute; left:-7%; width:114%; height:6px; border-radius:3px; background:#5a4632; transition:background 2s; }
+  .kakejiku::before { top:-4px; } .kakejiku::after { bottom:-4px; }
+  .kakejiku span { font-family:'Hiragino Mincho ProN','Yu Mincho',serif; font-size:clamp(16px,6vw,26px); color:#3a3a3a; transition:color 2s; }
+  #scene.day-bg .kakejiku { background:linear-gradient(180deg,#f9f3e4,#efe5cd); box-shadow:0 3px 8px rgba(0,0,0,.15); }
+  #scene.night-bg .kakejiku { background:linear-gradient(180deg,#6a6354,#585140); box-shadow:0 3px 8px rgba(0,0,0,.35); }
+  #scene.night-bg .kakejiku span { color:#2a2620; }
+  #scene.night-bg .kakejiku::before, #scene.night-bg .kakejiku::after { background:#3a2e20; }
+
+  /* 盆栽 */
+  .bonsai { position:absolute; left:3%; bottom:40%; font-size:clamp(22px,7vw,32px); pointer-events:none; transition:filter 2s; }
+  #scene.night-bg .bonsai { filter:brightness(.55); }
+
+  /* 行灯 */
+  .andon { position:absolute; right:4.5%; bottom:40%; width:9%; max-width:40px; height:14%; border:3px solid #4a3a28; border-radius:5px; transition:background 2s,box-shadow 2s,border-color 2s; }
+  .andon::before { content:''; position:absolute; top:-8px; left:50%; transform:translateX(-50%); width:70%; height:5px; background:#4a3a28; border-radius:2px; transition:background 2s; }
+  .andon::after { content:''; position:absolute; bottom:-8px; left:50%; transform:translateX(-50%); width:125%; height:5px; background:#4a3a28; border-radius:2px; transition:background 2s; }
+  #scene.day-bg .andon { background:linear-gradient(180deg,#f4ecd8,#e6dabc); }
+  #scene.night-bg .andon { border-color:#3a2c1c; background:radial-gradient(ellipse at 50% 55%, #ffeebb 0%, #f7cd72 60%, #dcab4e 100%); animation:andon-glow 3.5s ease-in-out infinite; }
+  @keyframes andon-glow {
+    0%,100% { box-shadow:0 0 22px 7px rgba(255,205,115,.45); }
+    50%     { box-shadow:0 0 30px 12px rgba(255,205,115,.65); }
+  }
+  #scene.dead-bg .kakejiku, #scene.dead-bg .andon, #scene.dead-bg .bonsai { filter:grayscale(90%) opacity(.55); }
+  #scene.dead-bg .kakejiku { background:#bbb; }
+  #scene.dead-bg .andon { background:#aaa; }
 
   /* 座布団 */
   #rock { position:absolute; bottom:7%; left:50%; transform:translateX(-50%); width:68%; height:13%; border-radius:18px; box-shadow:0 5px 8px rgba(0,0,0,.18); transition:background 2s; }
@@ -210,6 +244,9 @@
   <div id="scene" class="day-bg">
     <div class="shoji left"><div class="shoji-grid"></div></div>
     <div class="shoji right"><div class="shoji-grid"></div></div>
+    <div class="kakejiku"><span>河</span></div>
+    <div class="bonsai">🪴</div>
+    <div class="andon"></div>
     <div class="tatami-line"></div>
     <div id="rock"></div>
     <div class="zabuton-center"></div>
