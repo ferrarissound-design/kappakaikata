@@ -213,7 +213,7 @@
     <div class="tatami-line"></div>
     <div id="rock"></div>
     <div class="zabuton-center"></div>
-    <div id="level-badge">Lv.<span id="lv">1</span> <span id="stage-name">たまご</span>
+    <div id="level-badge">Lv.<span id="lv">1</span> <span id="stage-name">子ガッパ</span>
       <div id="exp-bar"><div style="width:0%"></div></div>
     </div>
     <div id="save-badge">💾 セーブ済み</div>
@@ -242,7 +242,7 @@
       <div class="rip">🪦</div>
       <div class="msg" id="death-msg"></div>
       <div class="record" id="death-record"></div>
-      <button id="btn-revive">🥚 あたらしいたまご</button>
+      <button id="btn-revive">🐸 あたらしい子ガッパ</button>
     </div>
   </div>
   <div id="actions">
@@ -561,7 +561,7 @@ function triggerDeath(){
     setSceneMode('dead-bg');
     document.body.className='day';
     document.getElementById('death-msg').innerHTML=`${state.name}は<br>天に召されました…`;
-    document.getElementById('death-record').textContent=`最高Lv.${state.maxLevel}　${'子ガッパ'}まで育てた`;
+    document.getElementById('death-record').textContent=`最高Lv.${state.maxLevel}　子ガッパを育てた`;
     document.getElementById('death-overlay').classList.add('show');
     setButtonsDisabled(true);
     saveState();
@@ -578,7 +578,7 @@ document.getElementById('btn-revive').onclick=()=>{
   setButtonsDisabled(false);
   applyDayNight(night,true);
   saveState();updateUI();
-  say('あたらしいたまごがきた…！',2500);particles('🥚',5);
+  say('あたらしい子ガッパがきた…！',2500);particles('✨',5);
 };
 
 function setButtonsDisabled(v,except=[]){
@@ -747,7 +747,7 @@ const ACHIEVEMENTS=[
   {id:'login3',      icon:'🔥', name:'3日れんぞく', desc:'3日連続でお世話した'},
   {id:'login7',      icon:'🏅', name:'1週間かんぺき', desc:'7日連続でお世話した'},
   {id:'mg10',        icon:'🧺', name:'キャッチ名人', desc:'ミニゲームで10点以上とった'},
-  {id:'all_evolve',  icon:'👑', name:'進化コンプ目指して', desc:'5回進化を経験した'},
+  {id:'lv20',        icon:'👑', name:'立派な子ガッパ', desc:'レベル20まで育てた'},
 ];
 function unlockAchv(id){
   if(state.achv[id]) return;
@@ -766,7 +766,7 @@ function checkAchievements(){
   if(state.loginStreak>=3) unlockAchv('login3');
   if(state.loginStreak>=7) unlockAchv('login7');
   if(state.bestMg>=10) unlockAchv('mg10');
-  if(t.evolve>=5) unlockAchv('all_evolve');
+  if(state.level>=20) unlockAchv('lv20');
 }
 function renderAchvList(){
   const el=document.getElementById('achv-list');
@@ -792,7 +792,7 @@ function renderHistList(){
   if(!state.history.length){el.innerHTML='<div style="text-align:center;color:#999;font-size:13px;padding:16px">まだ記録がないよ</div>';return;}
   el.innerHTML=state.history.map(h=>`
     <div class="hist-item">
-      <span>🦖 ${h.name}（${h.stage}・Lv.${h.lv}）</span>
+      <span>🐸 ${h.name}（${h.stage}・Lv.${h.lv}）</span>
       <span class="h-date">${h.date}</span>
     </div>`).join('');
 }
@@ -980,14 +980,14 @@ const night=isNightTime();lastNight=night;
 if(state.dead){
   setSceneMode('dead-bg');
   document.getElementById('death-msg').innerHTML=`${state.name}は<br>天に召されました…`;
-  document.getElementById('death-record').textContent=`最高Lv.${state.maxLevel}　${'子ガッパ'}まで育てた`;
+  document.getElementById('death-record').textContent=`最高Lv.${state.maxLevel}　子ガッパを育てた`;
   document.getElementById('death-overlay').classList.add('show');
   setButtonsDisabled(true);
 } else {
   applyDayNight(night,true);
 }
 updateUI();
-if(!state.dead) say(saved?'おかえり〜！':'たまごをお世話してかえそう！',2500);
+if(!state.dead) say(saved?'おかえり〜！':'子ガッパをお世話してあげよう！',2500);
 if(!state.dead) setTimeout(checkLoginBonus,1500);
 updateWeather();
 </script>
