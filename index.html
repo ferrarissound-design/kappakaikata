@@ -896,20 +896,29 @@ function startMinigame(){
       ov.appendChild(it);items.push(it);
       const fallTime=1500+Math.random()*800;
       const start=performance.now();
+      let caught=false;
+      // カゴの位置（bottom:6% → top約88〜96%のバンドで判定）
+      const CATCH_TOP=88, CATCH_BOTTOM=97;
       function fall(now){
         if(!mgActive){it.remove();return;}
         const p=(now-start)/fallTime;
-        if(p>=1){
-          // 着地判定
+        const topPct=p*100;
+        // カゴのバンドを通過する間に当たり判定
+        if(!caught && topPct>=CATCH_TOP && topPct<=CATCH_BOTTOM){
           const ix=parseFloat(it.dataset.x);
-          if(Math.abs(ix-basketX)<9){
+          if(Math.abs(ix-basketX)<10){
+            caught=true;
             if(it.dataset.good==='1'){score++;scoreEl.textContent=score;}
             else{score=Math.max(0,score-2);scoreEl.textContent=score;}
+            it.remove();items=items.filter(i=>i!==it);
+            return;
           }
+        }
+        if(p>=1){
           it.remove();items=items.filter(i=>i!==it);
           return;
         }
-        it.style.top=(p*100)+'%';
+        it.style.top=topPct+'%';
         requestAnimationFrame(fall);
       }
       requestAnimationFrame(fall);
