@@ -134,6 +134,58 @@
   #name-ok { background:linear-gradient(180deg,#7cb342,#689f38); color:#fff; box-shadow:0 3px 0 rgba(0,0,0,.15); }
   #toast { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:rgba(62,107,79,.95); color:#fff; padding:14px 26px; border-radius:20px; font-size:16px; font-weight:bold; opacity:0; pointer-events:none; transition:opacity .4s; z-index:20; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,.3); }
   #toast.show { opacity:1; }
+
+  /* 警告バナー */
+  #warn-banner { position:absolute; top:48px; left:50%; transform:translateX(-50%) translateY(-10px); background:linear-gradient(180deg,#ef5350,#d32f2f); color:#fff; border-radius:12px; padding:6px 18px; font-size:12px; font-weight:bold; white-space:nowrap; opacity:0; transition:opacity .5s,transform .5s; pointer-events:none; z-index:8; box-shadow:0 3px 10px rgba(0,0,0,.3); }
+  #warn-banner.show { opacity:1; transform:translateX(-50%) translateY(0); animation:warn-pulse 1.2s ease-in-out infinite; }
+  @keyframes warn-pulse { 0%,100%{box-shadow:0 3px 10px rgba(211,47,47,.3)}50%{box-shadow:0 3px 18px rgba(211,47,47,.8)} }
+
+  /* 雨エフェクト */
+  #rain-layer { position:absolute; inset:0; pointer-events:none; z-index:4; overflow:hidden; display:none; }
+  #rain-layer.show { display:block; }
+  .raindrop { position:absolute; top:-20px; width:2px; height:14px; background:linear-gradient(180deg,transparent,#9ecfee); border-radius:1px; animation:rain-fall linear infinite; opacity:.7; }
+  @keyframes rain-fall { to { transform:translateY(120vh); } }
+
+  /* 進化フラッシュ */
+  #evo-flash { position:fixed; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:40; }
+  #evo-flash.flash { animation:evo-flash-anim 1.2s ease-out; }
+  @keyframes evo-flash-anim { 0%{opacity:0}15%{opacity:.95}100%{opacity:0} }
+
+  /* メニューボタン */
+  #menu-btns { position:absolute; bottom:10px; right:10px; display:flex; gap:6px; z-index:6; }
+  .mini-btn { border:none; border-radius:10px; padding:5px 9px; font-size:14px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,.2); background:rgba(255,255,255,.85); }
+
+  /* モーダル共通 */
+  .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:30; align-items:center; justify-content:center; }
+  .modal.show { display:flex; }
+  .modal-box { background:#fff; border-radius:20px; padding:20px; width:86%; max-width:340px; max-height:75vh; overflow-y:auto; box-shadow:0 8px 30px rgba(0,0,0,.25); }
+  .modal-box h2 { text-align:center; color:#3e6b4f; font-size:16px; margin-bottom:12px; }
+  .modal-close { display:block; margin:14px auto 0; border:none; border-radius:12px; padding:10px 28px; font-size:14px; font-weight:bold; font-family:inherit; cursor:pointer; background:linear-gradient(180deg,#7cb342,#689f38); color:#fff; box-shadow:0 3px 0 rgba(0,0,0,.15); }
+
+  /* 実績 */
+  .achv { display:flex; align-items:center; gap:10px; padding:8px 6px; border-bottom:1px solid #eee; }
+  .achv .a-icon { font-size:24px; width:34px; text-align:center; filter:grayscale(100%); opacity:.35; }
+  .achv.unlocked .a-icon { filter:none; opacity:1; }
+  .achv .a-name { font-size:13px; font-weight:bold; color:#3e6b4f; }
+  .achv .a-desc { font-size:11px; color:#888; }
+  .achv.unlocked .a-name { color:#2e7d32; }
+
+  /* 育成記録 */
+  .hist-item { padding:8px 6px; border-bottom:1px solid #eee; font-size:13px; color:#3e6b4f; display:flex; justify-content:space-between; }
+  .hist-item .h-date { font-size:11px; color:#999; }
+
+  /* ミニゲーム */
+  #minigame-overlay { display:none; position:absolute; inset:0; background:linear-gradient(180deg,#bfe3ef,#dff2e0); z-index:15; border-radius:20px; overflow:hidden; }
+  #minigame-overlay.show { display:block; }
+  #mg-basket { position:absolute; bottom:6%; left:50%; transform:translateX(-50%); font-size:44px; transition:left .1s linear; z-index:3; }
+  .mg-item { position:absolute; font-size:30px; z-index:2; }
+  #mg-info { position:absolute; top:10px; left:0; right:0; text-align:center; font-size:14px; font-weight:bold; color:#3e6b4f; z-index:4; }
+  #mg-countdown { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:64px; font-weight:bold; color:#3e6b4f; z-index:5; text-shadow:0 2px 8px rgba(255,255,255,.8); }
+
+  /* ログインボーナス */
+  #login-bonus-box { text-align:center; }
+  #login-bonus-box .lb-days { font-size:36px; margin:8px 0; }
+  #login-bonus-box .lb-msg { font-size:14px; color:#3e6b4f; line-height:1.7; }
 </style>
 </head>
 <body class="day">
@@ -165,6 +217,17 @@
         <canvas id="kappa-canvas" style="display:none;width:100%;image-rendering:auto;transition:opacity 0.4s"></canvas>
       </div>
     </div>
+    <div id="warn-banner"></div>
+    <div id="rain-layer"></div>
+    <div id="menu-btns">
+      <button class="mini-btn" id="btn-achv" title="実績">🏆</button>
+      <button class="mini-btn" id="btn-hist" title="育成記録">📊</button>
+    </div>
+    <div id="minigame-overlay">
+      <div id="mg-info">🥒 きゅうりキャッチ！ <span id="mg-score">0</span>点 / 残り<span id="mg-time">15</span>秒</div>
+      <div id="mg-basket">🧺</div>
+      <div id="mg-countdown">3</div>
+    </div>
     <div id="death-overlay">
       <div class="rip">🪦</div>
       <div class="msg" id="death-msg"></div>
@@ -188,6 +251,29 @@
   </div>
 </div>
 <div id="toast"></div>
+<div id="evo-flash"></div>
+<div class="modal" id="achv-modal">
+  <div class="modal-box">
+    <h2>🏆 実績</h2>
+    <div id="achv-list"></div>
+    <button class="modal-close" id="achv-close">とじる</button>
+  </div>
+</div>
+<div class="modal" id="hist-modal">
+  <div class="modal-box">
+    <h2>📊 育成記録</h2>
+    <div id="hist-list"></div>
+    <button class="modal-close" id="hist-close">とじる</button>
+  </div>
+</div>
+<div class="modal" id="login-modal">
+  <div class="modal-box" id="login-bonus-box">
+    <h2>🎁 ログインボーナス</h2>
+    <div class="lb-days" id="lb-days">🔥1日目</div>
+    <div class="lb-msg" id="lb-msg"></div>
+    <button class="modal-close" id="login-close">うけとる！</button>
+  </div>
+</div>
 
 <script>
 // ===== BGM =====
@@ -257,6 +343,9 @@ function saveState(){
       level:state.level,exp:state.exp,stage:state.stage,
       name:state.name,dead:state.dead,maxLevel:state.maxLevel,
       care:state.care,wakeUsed:state.wakeUsed,
+      achv:state.achv,history:state.history,
+      loginStreak:state.loginStreak,lastLogin:state.lastLogin,
+      totals:state.totals,bestMg:state.bestMg,
       wasNight:isNightTime(),savedAt:Date.now()
     }));
     showSaveBadge();
@@ -289,7 +378,11 @@ const state={
   name:'ぷにすけ',dead:false,maxLevel:1,
   care:{feed:0,water:0,pet:0,play:0,wake:0},
   wakeUsed:false,sleeping:false,
-  blinking:false,expression:'normal'
+  blinking:false,expression:'normal',
+  achv:{},history:[],
+  loginStreak:0,lastLogin:'',
+  totals:{feed:0,water:0,pet:0,play:0,evolve:0,mg:0},
+  bestMg:0
 };
 if(saved){
   Object.assign(state,{
@@ -297,7 +390,11 @@ if(saved){
     level:saved.level??1,exp:saved.exp??0,stage:saved.stage??0,
     name:saved.name??'ぷにすけ',dead:saved.dead??false,maxLevel:saved.maxLevel??1,
     care:saved.care??{feed:0,water:0,pet:0,play:0,wake:0},
-    wakeUsed:saved.wakeUsed??false
+    wakeUsed:saved.wakeUsed??false,
+    achv:saved.achv??{},history:saved.history??[],
+    loginStreak:saved.loginStreak??0,lastLogin:saved.lastLogin??'',
+    totals:saved.totals??{feed:0,water:0,pet:0,play:0,evolve:0,mg:0},
+    bestMg:saved.bestMg??0
   });
   if(!state.dead&&saved.savedAt&&state.stage>0){
     const secs=Math.min(Math.floor((Date.now()-saved.savedAt)/1000),600);
@@ -461,6 +558,7 @@ function drawKappa(){
 function triggerDeath(){
   state.dead=true;
   state.maxLevel=Math.max(state.maxLevel,state.level);
+  addHistory();
   const w=document.getElementById('kappa-wrap');
   w.className='dying';
   document.getElementById('zzz').classList.remove('show');
@@ -511,6 +609,7 @@ function updateUI(){
   const avg=(state.food+state.water+state.mood)/3;
   if(state.stage>0&&!state.dead&&!state.sleeping) state.expression=avg>=70?'happy':avg<=30?'sad':'normal';
   document.getElementById('btn-wake').disabled=!(state.sleeping&&!state.wakeUsed&&state.stage>0);
+  updateWarnBanner();
   drawKappa();
 }
 
@@ -552,7 +651,9 @@ function gainExp(n){
     state.maxLevel=Math.max(state.maxLevel,state.level);
     if(state.stage===0&&state.level>=3){
       state.stage=1;
+      evoFlash();
       toast('🎉 たまごがかえった！<br>子ガッパたんじょう！',2500);particles('✨',8);
+      unlockAchv('first_hatch');
     } else if(state.stage===1&&state.level>=7){
       const c=state.care;
       if(c.water>=c.feed&&c.water>=c.pet&&c.water>=c.play){
@@ -564,6 +665,10 @@ function gainExp(n){
       } else {
         state.stage=2;toast('🎊 大人ガッパに成長した！',2500);
       }
+      evoFlash();
+      state.totals.evolve++;
+      unlockAchv('first_evolve');
+      checkAchievements();
       particles('🌟',8);
     } else {
       toast('⬆️ Lv.'+state.level+' になった！');particles('✨',4);
@@ -589,25 +694,27 @@ function action(fn){
 document.getElementById('btn-feed').onclick=()=>action(()=>{
   if(state.stage===0){say(pick(EGG_LINES));gainExp(3);animate('wiggle');return;}
   if(state.food>=98){say('おなかいっぱい…');return;}
-  state.food+=22;state.mood+=4;state.care.feed++;
-  say(pick(FEED_LINES));particles('🥒',3);gainExp(5);animate('wiggle');
+  state.food+=22;state.mood+=4;state.care.feed++;state.totals.feed++;
+  say(pick(FEED_LINES));particles('🥒',3);gainExp(5);animate('wiggle');checkAchievements();
 });
 document.getElementById('btn-water').onclick=()=>action(()=>{
   if(state.stage===0){say(pick(EGG_LINES));gainExp(3);animate('wiggle');return;}
   if(state.water>=98){say('お皿はもう満タンだよ');return;}
-  state.water+=26;state.mood+=3;state.care.water++;
-  say(pick(WATER_LINES));particles('💧',4);gainExp(5);
+  state.water+=26;state.mood+=3;state.care.water++;state.totals.water++;
+  say(pick(WATER_LINES));particles('💧',4);gainExp(5);checkAchievements();
 });
 document.getElementById('btn-pet').onclick=()=>action(()=>{
   if(state.stage===0){say(pick(EGG_LINES));gainExp(2);animate('wiggle');return;}
-  state.mood+=12;state.care.pet++;
-  say(pick(PET_LINES));particles('💗',4);gainExp(4);animate('wiggle');
+  state.mood+=12;state.care.pet++;state.totals.pet++;
+  say(pick(PET_LINES));particles('💗',4);gainExp(4);animate('wiggle');checkAchievements();
 });
 document.getElementById('btn-play').onclick=()=>action(()=>{
   if(state.stage===0){say(pick(EGG_LINES));gainExp(2);animate('wiggle');return;}
   if(state.food<15){say('おなかすいて遊べない…');return;}
-  state.mood+=16;state.food-=8;state.water-=6;state.care.play++;
-  say(pick(PLAY_LINES));particles('⚽',3);gainExp(8);animate('happy-jump');
+  state.food-=8;state.water-=6;state.care.play++;state.totals.play++;
+  say(pick(PLAY_LINES));
+  checkAchievements();
+  startMinigame();
 });
 document.getElementById('kappa-wrap').onclick=()=>{
   if(state.dead) return;
@@ -657,6 +764,245 @@ document.getElementById('name-ok').onclick=()=>{
 };
 document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('name-ok').click();});
 
+// ===== 実績 =====
+const ACHIEVEMENTS=[
+  {id:'first_hatch', icon:'🐣', name:'はじめての誕生', desc:'たまごをかえした'},
+  {id:'first_evolve',icon:'🌟', name:'はじめての進化', desc:'子ガッパから進化させた'},
+  {id:'pet100',      icon:'🤚', name:'なでなでマスター', desc:'累計100回なでた'},
+  {id:'feed50',      icon:'🥒', name:'きゅうりソムリエ', desc:'累計50本きゅうりをあげた'},
+  {id:'water50',     icon:'💧', name:'うるおいキーパー', desc:'累計50回水をかけた'},
+  {id:'play30',      icon:'⚽', name:'あそびのたつじん', desc:'累計30回あそんだ'},
+  {id:'lv10',        icon:'🔟', name:'Lv.10とうたつ', desc:'レベル10まで育てた'},
+  {id:'login3',      icon:'🔥', name:'3日れんぞく', desc:'3日連続でお世話した'},
+  {id:'login7',      icon:'🏅', name:'1週間かんぺき', desc:'7日連続でお世話した'},
+  {id:'mg10',        icon:'🧺', name:'キャッチ名人', desc:'ミニゲームで10点以上とった'},
+  {id:'all_evolve',  icon:'👑', name:'進化コンプ目指して', desc:'5回進化を経験した'},
+];
+function unlockAchv(id){
+  if(state.achv[id]) return;
+  state.achv[id]=Date.now();
+  const a=ACHIEVEMENTS.find(x=>x.id===id);
+  if(a) toast(`🏆 実績解除！<br>${a.icon} ${a.name}`,2500);
+  saveState();
+}
+function checkAchievements(){
+  const t=state.totals;
+  if(t.pet>=100) unlockAchv('pet100');
+  if(t.feed>=50) unlockAchv('feed50');
+  if(t.water>=50) unlockAchv('water50');
+  if(t.play>=30) unlockAchv('play30');
+  if(state.level>=10) unlockAchv('lv10');
+  if(state.loginStreak>=3) unlockAchv('login3');
+  if(state.loginStreak>=7) unlockAchv('login7');
+  if(state.bestMg>=10) unlockAchv('mg10');
+  if(t.evolve>=5) unlockAchv('all_evolve');
+}
+function renderAchvList(){
+  const el=document.getElementById('achv-list');
+  el.innerHTML=ACHIEVEMENTS.map(a=>`
+    <div class="achv ${state.achv[a.id]?'unlocked':''}">
+      <div class="a-icon">${a.icon}</div>
+      <div><div class="a-name">${a.name}</div><div class="a-desc">${a.desc}</div></div>
+    </div>`).join('');
+}
+document.getElementById('btn-achv').onclick=()=>{renderAchvList();document.getElementById('achv-modal').classList.add('show');};
+document.getElementById('achv-close').onclick=()=>document.getElementById('achv-modal').classList.remove('show');
+
+// ===== 育成記録 =====
+function addHistory(){
+  state.history.unshift({
+    name:state.name,lv:state.level,stage:STAGE_NAMES[state.stage],
+    date:new Date().toLocaleDateString('ja-JP')
+  });
+  if(state.history.length>20) state.history.length=20;
+}
+function renderHistList(){
+  const el=document.getElementById('hist-list');
+  if(!state.history.length){el.innerHTML='<div style="text-align:center;color:#999;font-size:13px;padding:16px">まだ記録がないよ</div>';return;}
+  el.innerHTML=state.history.map(h=>`
+    <div class="hist-item">
+      <span>🦖 ${h.name}（${h.stage}・Lv.${h.lv}）</span>
+      <span class="h-date">${h.date}</span>
+    </div>`).join('');
+}
+document.getElementById('btn-hist').onclick=()=>{renderHistList();document.getElementById('hist-modal').classList.add('show');};
+document.getElementById('hist-close').onclick=()=>document.getElementById('hist-modal').classList.remove('show');
+
+// ===== ログインボーナス =====
+function checkLoginBonus(){
+  const today=new Date().toLocaleDateString('ja-JP');
+  if(state.lastLogin===today) return;
+  const yesterday=new Date(Date.now()-86400000).toLocaleDateString('ja-JP');
+  state.loginStreak=(state.lastLogin===yesterday)?state.loginStreak+1:1;
+  state.lastLogin=today;
+  const bonusExp=5+Math.min(state.loginStreak,7)*3;
+  document.getElementById('lb-days').textContent='🔥 '+state.loginStreak+'日れんぞく！';
+  document.getElementById('lb-msg').innerHTML=`きょうも来てくれてありがとう！<br>ボーナス：経験値 +${bonusExp}　機嫌 +10`;
+  document.getElementById('login-modal').classList.add('show');
+  document.getElementById('login-close').onclick=()=>{
+    document.getElementById('login-modal').classList.remove('show');
+    state.mood=Math.min(100,state.mood+10);
+    if(state.stage>0&&!state.dead) gainExp(bonusExp); else state.exp+=bonusExp;
+    checkAchievements();updateUI();saveState();
+  };
+  saveState();
+}
+
+// ===== 天気（ランダム雨） =====
+let isRaining=false;
+function setupRain(){
+  const layer=document.getElementById('rain-layer');
+  for(let i=0;i<40;i++){
+    const d=document.createElement('div');
+    d.className='raindrop';
+    d.style.left=Math.random()*100+'%';
+    d.style.animationDuration=(0.6+Math.random()*0.6)+'s';
+    d.style.animationDelay=Math.random()*2+'s';
+    layer.appendChild(d);
+  }
+}
+function updateWeather(){
+  if(state.dead) return;
+  const wasRaining=isRaining;
+  isRaining=Math.random()<0.25;
+  document.getElementById('rain-layer').classList.toggle('show',isRaining);
+  if(isRaining&&!wasRaining&&state.stage>0&&!state.sleeping){
+    say('あめだ〜！カッパびより🌧️',2500);
+    state.mood=Math.min(100,state.mood+5);
+    state.water=Math.min(100,state.water+10);
+    updateUI();
+  }
+}
+setupRain();
+setInterval(updateWeather,120000);
+
+// ===== 進化フラッシュ =====
+function evoFlash(){
+  const f=document.getElementById('evo-flash');
+  f.classList.remove('flash');
+  void f.offsetWidth;
+  f.classList.add('flash');
+}
+
+// ===== 時間帯セリフ =====
+const TIME_LINES={
+  morning:['おはよう！today もげんき！','あさのきゅうりはうまい','んー！いいあさ！'],
+  noon:['おひるねしたいな〜','ぽかぽかするね','おなかすいてきた…'],
+  evening:['ゆうやけきれいだね','そろそろねむくなってきた…','きょうもありがとう'],
+};
+function randomTimeTalk(){
+  if(state.dead||state.sleeping||state.stage===0) return;
+  if(Math.random()>0.3) return;
+  const h=new Date().getHours();
+  const lines=h<11?TIME_LINES.morning:h<17?TIME_LINES.noon:TIME_LINES.evening;
+  say(pick(lines),2500);
+}
+setInterval(randomTimeTalk,45000);
+
+// ===== 警告バナー =====
+function updateWarnBanner(){
+  const b=document.getElementById('warn-banner');
+  if(state.dead||state.stage===0||state.sleeping){b.classList.remove('show');return;}
+  if(state.water<20){b.textContent='⚠️ お皿の水がなくなりそう！';b.classList.add('show');}
+  else if(state.food<20){b.textContent='⚠️ おなかがペコペコ！';b.classList.add('show');}
+  else if(state.mood<20){b.textContent='⚠️ さみしがってるよ…';b.classList.add('show');}
+  else b.classList.remove('show');
+}
+
+// ===== ミニゲーム：きゅうりキャッチ =====
+let mgActive=false;
+function startMinigame(){
+  if(mgActive||state.dead||state.sleeping||state.stage===0) return;
+  mgActive=true;
+  const ov=document.getElementById('minigame-overlay');
+  const basket=document.getElementById('mg-basket');
+  const scoreEl=document.getElementById('mg-score');
+  const timeEl=document.getElementById('mg-time');
+  const cd=document.getElementById('mg-countdown');
+  ov.classList.add('show');
+  let score=0,timeLeft=15,items=[],timers=[];
+  scoreEl.textContent='0';timeEl.textContent='15';
+  let basketX=50;
+  basket.style.left='50%';
+
+  const moveBasket=e=>{
+    const rect=ov.getBoundingClientRect();
+    const x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+    basketX=Math.max(8,Math.min(92,x/rect.width*100));
+    basket.style.left=basketX+'%';
+  };
+  ov.addEventListener('touchmove',moveBasket);
+  ov.addEventListener('mousemove',moveBasket);
+
+  // カウントダウン
+  let count=3;
+  cd.style.display='flex';cd.textContent=count;
+  const cdTimer=setInterval(()=>{
+    count--;
+    if(count>0){cd.textContent=count;}
+    else{
+      clearInterval(cdTimer);cd.style.display='none';
+      runGame();
+    }
+  },800);
+
+  function runGame(){
+    const spawn=setInterval(()=>{
+      const it=document.createElement('div');
+      it.className='mg-item';
+      it.textContent=Math.random()<0.8?'🥒':'🪨';
+      it.dataset.good=it.textContent==='🥒'?'1':'0';
+      const x=8+Math.random()*84;
+      it.style.left=x+'%';it.style.top='-30px';
+      it.dataset.x=x;
+      ov.appendChild(it);items.push(it);
+      const fallTime=1500+Math.random()*800;
+      const start=performance.now();
+      function fall(now){
+        if(!mgActive){it.remove();return;}
+        const p=(now-start)/fallTime;
+        if(p>=1){
+          // 着地判定
+          const ix=parseFloat(it.dataset.x);
+          if(Math.abs(ix-basketX)<9){
+            if(it.dataset.good==='1'){score++;scoreEl.textContent=score;}
+            else{score=Math.max(0,score-2);scoreEl.textContent=score;}
+          }
+          it.remove();items=items.filter(i=>i!==it);
+          return;
+        }
+        it.style.top=(p*100)+'%';
+        requestAnimationFrame(fall);
+      }
+      requestAnimationFrame(fall);
+    },600);
+    timers.push(spawn);
+
+    const tick=setInterval(()=>{
+      timeLeft--;timeEl.textContent=timeLeft;
+      if(timeLeft<=0) endGame();
+    },1000);
+    timers.push(tick);
+  }
+
+  function endGame(){
+    mgActive=false;
+    timers.forEach(clearInterval);
+    items.forEach(i=>i.remove());
+    ov.removeEventListener('touchmove',moveBasket);
+    ov.removeEventListener('mousemove',moveBasket);
+    ov.classList.remove('show');
+    state.totals.mg++;
+    state.bestMg=Math.max(state.bestMg,score);
+    const expGain=Math.min(score*2,30);
+    state.mood=Math.min(100,state.mood+Math.min(score,20));
+    toast(`🧺 ${score}点キャッチ！<br>経験値 +${expGain}`,2500);
+    say(score>=10?'いっぱいとれた〜！':'たのしかった！',2500);
+    if(state.stage>0) gainExp(expGain);
+    checkAchievements();updateUI();saveState();
+  }
+}
+
 // ===== 起動 =====
 const night=isNightTime();lastNight=night;
 if(state.dead){
@@ -670,6 +1016,8 @@ if(state.dead){
 }
 updateUI();
 if(!state.dead) say(saved?'おかえり〜！':'たまごをお世話してかえそう！',2500);
+if(!state.dead) setTimeout(checkLoginBonus,1500);
+updateWeather();
 </script>
 </body>
 </html>
