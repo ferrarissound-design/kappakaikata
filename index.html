@@ -306,15 +306,30 @@ const kappaCtx=kappaCanvas.getContext('2d');
 
 function removeWhiteBg(imgEl){
   const oc=document.createElement('canvas');
-  oc.width=imgEl.naturalWidth; oc.height=imgEl.naturalHeight;
+  const W=imgEl.naturalWidth, H=imgEl.naturalHeight;
+  oc.width=W; oc.height=H;
   const ctx=oc.getContext('2d');
   ctx.drawImage(imgEl,0,0);
-  const d=ctx.getImageData(0,0,oc.width,oc.height);
-  for(let i=0;i<d.data.length;i+=4){
-    const r=d.data[i],g=d.data[i+1],b=d.data[i+2];
-    // 純白に近い色だけ除去（黄色系の皿の色は保護）
-    const dist=Math.sqrt((255-r)**2+(255-g)**2+(255-b)**2);
-    if(dist<40) d.data[i+3]=0;
+  const d=ctx.getImageData(0,0,W,H);
+  const px=d.data;
+  // フラッドフィル：画像の四辺から近-白ピクセルをたどり背景のみ除去
+  const isNearWhite=(i)=>{
+    const r=px[i],g=px[i+1],b=px[i+2];
+    return (255-r)**2+(255-g)**2+(255-b)**2 < 2500; // dist<50
+  };
+  const visited=new Uint8Array(W*H);
+  const queue=[];
+  const seed=(x,y)=>{ const idx=y*W+x; if(!visited[idx]&&isNearWhite(idx*4)){visited[idx]=1;queue.push(idx);} };
+  for(let x=0;x<W;x++){seed(x,0);seed(x,H-1);}
+  for(let y=0;y<H;y++){seed(0,y);seed(W-1,y);}
+  while(queue.length){
+    const idx=queue.pop();
+    px[idx*4+3]=0;
+    const x=idx%W, y=Math.floor(idx/W);
+    if(x>0)   seed(x-1,y);
+    if(x<W-1) seed(x+1,y);
+    if(y>0)   seed(x,y-1);
+    if(y<H-1) seed(x,y+1);
   }
   ctx.putImageData(d,0,0);
   return oc;
