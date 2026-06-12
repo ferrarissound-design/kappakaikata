@@ -312,7 +312,9 @@ function removeWhiteBg(imgEl){
   const d=ctx.getImageData(0,0,oc.width,oc.height);
   for(let i=0;i<d.data.length;i+=4){
     const r=d.data[i],g=d.data[i+1],b=d.data[i+2];
-    if(r>220&&g>220&&b>220) d.data[i+3]=0;
+    // 純白に近い色だけ除去（黄色系の皿の色は保護）
+    const dist=Math.sqrt((255-r)**2+(255-g)**2+(255-b)**2);
+    if(dist<40) d.data[i+3]=0;
   }
   ctx.putImageData(d,0,0);
   return oc;
@@ -337,12 +339,15 @@ function startKappaSwitch(){
     setTimeout(()=>{ kappaCanvas.style.opacity='1'; },500);
   },20000);
 }
+// 画像ごとのY方向オフセット比率（正=下にずらす、元画像高さに対する割合）
+const KAPPA_Y_OFFSET=[0, 0, 0.12];
 function showKappa(idx){
   const src=kappaImages[idx];
   if(!src) return;
-  kappaCanvas.width=src.width; kappaCanvas.height=src.height;
-  kappaCtx.clearRect(0,0,src.width,src.height);
-  kappaCtx.drawImage(src,0,0);
+  const offsetY=Math.round(src.height*KAPPA_Y_OFFSET[idx]);
+  kappaCanvas.width=src.width; kappaCanvas.height=src.height+offsetY;
+  kappaCtx.clearRect(0,0,kappaCanvas.width,kappaCanvas.height);
+  kappaCtx.drawImage(src,0,offsetY);
   kappaCanvas.style.display='block';
 }
 
