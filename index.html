@@ -34,6 +34,51 @@
   #scene.night-bg { background:linear-gradient(180deg,#3a3550 0%,#332e48 48%,#5a5038 48.5%,#4a4230 100%); }
   #scene.dead-bg  { background:linear-gradient(180deg,#b8b8c8 0%,#9a9aaa 48%,#888878 48.5%,#707080 100%); }
 
+  /* リビング（昭和レトロ）昼 */
+  #scene.living-bg { background:linear-gradient(180deg,#f0e8d0 0%,#e8dcc0 47%,#7a5c30 47.5%,#5e4520 100%); }
+
+  /* リビングでは障子・和室装飾を隠す */
+  #scene.living-bg .shoji,
+  #scene.living-bg .kakejiku,
+  #scene.living-bg .andon { display:none; }
+
+  /* リビングの盆栽→観葉植物として残す（位置調整） */
+  #scene.living-bg .bonsai { bottom:43%; left:3%; font-size:clamp(24px,8vw,36px); filter:none; }
+
+  /* カーテン */
+  .curtain { position:absolute; top:0; width:18%; height:50%; pointer-events:none; transition:background 2s,display 2s; }
+  .curtain.left  { left:0;  border-radius:0 0 12px 0; }
+  .curtain.right { right:0; border-radius:0 0 0 12px; }
+  #scene.living-bg .curtain.left  { background:linear-gradient(180deg,#c84a2a 0%,#b03a1e 50%,#c84a2a 100%); display:block; }
+  #scene.living-bg .curtain.right { background:linear-gradient(180deg,#c84a2a 0%,#b03a1e 50%,#c84a2a 100%); display:block; }
+  #scene.night-bg .curtain, #scene.day-bg .curtain, #scene.dead-bg .curtain { display:none; }
+
+  /* 昭和テレビ */
+  #retro-tv { position:absolute; right:5%; bottom:40%; width:18%; max-width:80px; height:18%; pointer-events:none; background:linear-gradient(180deg,#3a3a3a,#282828); border-radius:8px; border:3px solid #222; box-shadow:2px 4px 8px rgba(0,0,0,.4); transition:opacity 2s; }
+  #retro-tv .tv-screen { position:absolute; top:15%; left:12%; width:76%; height:55%; background:linear-gradient(135deg,#2a3a2a,#1a2a1a); border-radius:4px; border:2px solid #111; }
+  #retro-tv .tv-leg { position:absolute; bottom:-18%; width:12%; height:20%; background:#2a2a2a; border-radius:2px; }
+  #retro-tv .tv-leg.left  { left:20%; }
+  #retro-tv .tv-leg.right { right:20%; }
+  #scene.night-bg #retro-tv, #scene.day-bg #retro-tv, #scene.dead-bg #retro-tv { display:none; }
+  #scene.living-bg #retro-tv { display:block; }
+
+  /* フローリング */
+  .living-floor { position:absolute; bottom:0; width:100%; height:48%; pointer-events:none; }
+  #scene.living-bg .living-floor {
+    background: repeating-linear-gradient(0deg, transparent 0 14px, rgba(0,0,0,.12) 14px 16px);
+  }
+  #scene.night-bg .living-floor, #scene.day-bg .living-floor, #scene.dead-bg .living-floor { display:none; }
+
+  /* リビングの畳テクスチャは非表示 */
+  #scene.living-bg .tatami-line { display:none; }
+
+  /* リビングの座布団色 */
+  #scene.living-bg #rock { background:linear-gradient(180deg,#4a8c6a 0%,#3a7a5a 60%,#2a6848 100%); }
+  #scene.living-bg #rock::before, #scene.living-bg #rock::after { background:#f0d050; }
+
+  /* レベルバッジ（リビング） */
+  #scene.living-bg #level-badge { background:rgba(255,255,255,.85); color:#5a4020; }
+
   /* 障子 */
   .shoji { position:absolute; top:6%; width:30%; height:40%; border-radius:4px; transition:background 2s,border-color 2s; }
   .shoji.left { left:6%; } .shoji.right { right:6%; }
@@ -241,12 +286,16 @@
     <div class="stat"><div class="label"><span>💧 お皿</span><span id="v-water">80</span></div><div class="bar" id="bar-water"><div style="width:80%"></div></div></div>
     <div class="stat"><div class="label"><span>😊 機嫌</span><span id="v-mood">80</span></div><div class="bar" id="bar-mood"><div style="width:80%"></div></div></div>
   </div>
-  <div id="scene" class="day-bg">
+  <div id="scene" class="living-bg">
     <div class="shoji left"><div class="shoji-grid"></div></div>
     <div class="shoji right"><div class="shoji-grid"></div></div>
     <div class="kakejiku"><span>河</span></div>
     <div class="bonsai">🪴</div>
     <div class="andon"></div>
+    <div class="curtain left"></div>
+    <div class="curtain right"></div>
+    <div id="retro-tv"><div class="tv-screen"></div><div class="tv-leg left"></div><div class="tv-leg right"></div></div>
+    <div class="living-floor"></div>
     <div class="tatami-line"></div>
     <div id="rock"></div>
     <div class="zabuton-center"></div>
@@ -438,7 +487,7 @@ function showSaveBadge(){
 function isNightTime(){const h=new Date().getHours();return h>=22||h<6;}
 function setSceneMode(mode){
   const scene=document.getElementById('scene');
-  scene.classList.remove('day-bg','night-bg','dead-bg');
+  scene.classList.remove('day-bg','night-bg','dead-bg','living-bg');
   scene.classList.add(mode);
 }
 
@@ -507,7 +556,7 @@ function applyDayNight(night,initial=false){
     }
   } else {
     body.className='day';
-    setSceneMode('day-bg');
+    setSceneMode('living-bg');
     state.wakeUsed=false;
     if(state.sleeping){
       state.sleeping=false;
